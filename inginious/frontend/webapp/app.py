@@ -192,7 +192,7 @@ def runfcgi(func, addr=('localhost', 8000)):
     return flups.WSGIServer(func, multiplexed=True, bindAddress=addr, debug=False).run()
 
 
-def start_app(config, hostname="localhost", port=8080, sshhost=None, sshport=8081):
+def start_app(config, hostname="localhost", port=8080):
     """
     :type config: collections.OrderedDict
     :type hostname: str

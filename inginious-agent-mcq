@@ -41,11 +41,11 @@ if __name__ == "__main__":
     context = Context()
 
     # Create agent
-    agent = MCQAgent(context, args.backend, args.tasks)
+    agent = MCQAgent(context, args.backend, 1, args.tasks)
 
     # Run!
     try:
-        loop.run_until_complete(agent.run_dealer())
+        loop.run_until_complete(agent.run())
     except:
         pass
     finally:
