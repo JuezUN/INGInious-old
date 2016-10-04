@@ -121,7 +121,10 @@ def get_app(config):
 
     client = create_arch(config, task_directory, zmq_context)
 
-    lis_outcome_manager = LisOutcomeManager(database, user_manager, course_factory, config["lti"])
+    autoenroll = config.get("autoenroll", False)
+
+    lis_outcome_manager = LisOutcomeManager(database, user_manager, course_factory, task_factory, 
+                                            config["lti"], autoenroll)
 
     submission_manager = LTISubmissionManager(client, user_manager, database, gridfs, plugin_manager,
                                               config.get('nb_submissions_kept', 5), lis_outcome_manager)

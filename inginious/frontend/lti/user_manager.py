@@ -11,6 +11,7 @@ from inginious.frontend.common.user_manager import AbstractUserManager
 
 
 class UserManager(AbstractUserManager):
+
     def __init__(self, session, database, lti_user_name):
         """
         :type session: inginious.frontend.lti.custom_session.CustomSession
@@ -83,7 +84,7 @@ class UserManager(AbstractUserManager):
             "task": (course_id, task_id),
             "outcome_service_url": outcome_service_url,
             "outcome_result_id": outcome_result_id,
-            "consumer_key": consumer_key
+            "consumer_key": consumer_key,
         })
 
     def get_session_identifier(self):
@@ -140,6 +141,19 @@ class UserManager(AbstractUserManager):
                 return "failed"
         return "notattempted"
 
+    def get_task_result_grade(self, task, username=None):
+        """
+        :param task: a Task object
+        :param username: The username of the user for who we want to retrieve the grade. If None, uses self.session_username()
+        :return: "success" or "failure", a floating point number (percentage of max grade)
+        """
+        username = username or self.session_username()
+        val = self._get_task_grade_list(task, username)
+        if len(val) == 1:
+            return val[0]["result"], float(val[0]["grade"])
+        else:
+            return "failure", 0.0
+
     def get_task_grade(self, task, username=None):
         """
         :param task: a Task object
@@ -151,3 +165,62 @@ class UserManager(AbstractUserManager):
         if len(val) == 1:
             return float(val[0]["grade"])
         return 0.0
+
+    def user_saw_task(self, username, courseid, taskid):
+        """ Set in the database that the user has viewed this task """
+        self._database.user_tasks.update({"username": username, "courseid": courseid, "taskid": taskid},
+                                         {"$setOnInsert": {"username": username, "courseid": courseid, "taskid": taskid,
+                                                           "tried": 0, "succeeded": False, "grade": 0.0, "submissionid": None}},
+                                         upsert=True)
+
+    def update_user_stats(self, username, task, submission, result, grade):
+        """ Update stats with a new submission """
+        self.user_saw_task(username, submission["courseid"], submission["taskid"])
+
+        old_submission = self._database.user_tasks.find_one_and_update(
+            {"username": username, "courseid": submission["courseid"], "taskid": submission["taskid"]}, {"$inc": {"tried": 1}})
+
+        # Check if the submission is the default download
+        set_default = task.get_evaluate() == 'last' or \
+                      (task.get_evaluate() == 'student' and old_submission is None) or \
+                      (task.get_evaluate() == 'best' and old_submission.get('grade', 0.0) <= grade)
+
+        if set_default:
+            self._database.user_tasks.find_one_and_update(
+                {"username": username, "courseid": submission["courseid"], "taskid": submission["taskid"]},
+                {"$set": {"succeeded": result == "success", "grade": grade,"submissionid": submission['_id']}})
+
+    def course_is_user_registered(self, course, username=None):
+        """
+        Checks if a user is registered
+        :param course: a Course object
+        :param username: The username of the user that we want to check. If None, uses self.session_username()
+        :return: True if the user is registered, False else
+        """
+        if username is None:
+            username = self.session_username()
+
+        return self._database.aggregations.find_one({"students": username, "courseid": course.get_id()}) is not None
+
+    def course_register_user(self, course, username, email, realname):
+        """
+        Register a user to the course
+        :param course: a Course object
+        :param username: The username of the user that we want to register. If None, uses self.session_username()
+        :param password: Password for the course. Needed if course.is_password_needed_for_registration() and force != True
+        :param force: Force registration
+        :return: True if the registration succeeded, False else
+        """
+
+        if self.course_is_user_registered(course, username):
+            return False  # already registered?
+
+        aggregation = self._database.aggregations.find_one({"courseid": course.get_id(), "default": True})
+        if aggregation is None:
+            self._database.aggregations.insert({"courseid": course.get_id(), "description": "Default classroom",
+                                              "students": [username], "tutors": [], "groups": [], "default": True})
+        else:
+            self._database.aggregations.find_one_and_update({"courseid": course.get_id(), "default": True},
+                                                          {"$push": {"students": username}})
+
+        return True
