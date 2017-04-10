@@ -19,23 +19,26 @@ class BatchManager(object):
         Manages batch jobs. Store them in DB and communicates with the inginious.backend to start them.
     """
 
-    def __init__(self, client, database, gridfs, submission_manager, user_manager, task_directory):
+    def __init__(self, client, database, gridfs, submission_manager, user_manager, tasks_fs):
         self._client = client
         self._database = database
         self._gridfs = gridfs
         self._submission_manager = submission_manager
         self._user_manager = user_manager
-        self._task_directory = task_directory
+        self._tasks_fs = tasks_fs
         self._logger = logging.getLogger("inginious.batch")
 
     def _get_course_data(self, course):
         """ Returns a file-like object to a tgz archive of the course files """
-        dir_path = os.path.join(self._task_directory, course.get_id())
-        tmpfile = tempfile.TemporaryFile()
-        tar = tarfile.open(fileobj=tmpfile, mode='w:gz')
-        tar.add(dir_path, "/", True)
-        tar.close()
-        tmpfile.seek(0)
+        # TODO avoid copying
+        course_fs = self._tasks_fs.from_subfolder(course.get_id())
+        with tempfile.TemporaryDirectory() as tmpdir:
+            course_fs.copy_from(None, tmpdir.name)
+            tmpfile = tempfile.TemporaryFile()
+            tar = tarfile.open(fileobj=tmpfile, mode='w:gz')
+            tar.add(tmpdir.name, "/", True)
+            tar.close()
+            tmpfile.seek(0)
         return tmpfile.read()
 
     def _get_submissions_data(self, course, tasks, folders, eval_only):

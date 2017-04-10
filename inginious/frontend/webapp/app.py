@@ -9,6 +9,7 @@ from pymongo import MongoClient
 import web
 from web.debugerror import debugerror
 
+from inginious.common.filesystems.local import LocalFSProvider
 from inginious.frontend.common.arch_helper import create_arch, start_asyncio_and_zmq
 from inginious.frontend.webapp.database_updater import update_database
 from inginious.frontend.common.plugin_manager import PluginManager
@@ -120,18 +121,18 @@ def get_app(config):
     database = mongo_client[config.get('mongo_opt', {}).get('database', 'INGInious')]
     gridfs = GridFS(database)
 
-    course_factory, task_factory = create_factories(task_directory, plugin_manager, WebAppCourse, WebAppTask)
+    fs_provider = LocalFSProvider(task_directory)
+    course_factory, task_factory = create_factories(fs_provider, plugin_manager, WebAppCourse, WebAppTask)
 
     user_manager = UserManager(web.session.Session(appli, MongoStore(database, 'sessions')), database, config.get('superadmins', []))
 
     update_pending_jobs(database)
 
-    client = create_arch(config, task_directory, zmq_context)
+    client = create_arch(config, fs_provider, zmq_context)
 
     submission_manager = WebAppSubmissionManager(client, user_manager, database, gridfs, plugin_manager)
 
-    batch_manager = BatchManager(client, database, gridfs, submission_manager, user_manager,
-                                 task_directory)
+    batch_manager = BatchManager(client, database, gridfs, submission_manager, user_manager, fs_provider)
 
     template_helper = TemplateHelper(plugin_manager, 'frontend/webapp/templates', 'frontend/webapp/templates/layout',
                                      config.get('use_minified_js', True))

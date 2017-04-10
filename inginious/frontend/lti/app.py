@@ -11,6 +11,7 @@ from pymongo import MongoClient
 import pymongo
 import web
 
+from inginious.common.filesystems.local import LocalFSProvider
 from inginious.frontend.common.arch_helper import create_arch, start_asyncio_and_zmq
 from inginious.frontend.common.session_mongodb import MongoStore
 from inginious.frontend.common.plugin_manager import PluginManager
@@ -100,7 +101,8 @@ def get_app(config):
     database = mongo_client[config.get('mongo_opt', {}).get('database', 'INGInious')]
     gridfs = GridFS(database)
 
-    course_factory, task_factory = create_factories(task_directory, plugin_manager, FrontendCourse, FrontendTask)
+    fs_provider = LocalFSProvider(task_directory)
+    course_factory, task_factory = create_factories(fs_provider, plugin_manager, FrontendCourse, FrontendTask)
 
     #
     # Allow user config to over-rider the username strong in Mongo.
@@ -116,7 +118,7 @@ def get_app(config):
 
     update_pending_jobs(database)
 
-    client = create_arch(config, task_directory, zmq_context)
+    client = create_arch(config, fs_provider, zmq_context)
 
     lis_outcome_manager = LisOutcomeManager(database, user_manager, course_factory, config["lti"])
 
