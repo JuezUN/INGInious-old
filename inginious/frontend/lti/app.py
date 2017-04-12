@@ -4,7 +4,9 @@
 # more information about the licensing of this file.
 
 """ Starts the webapp """
+import importlib
 import logging
+import sys
 
 from gridfs import GridFS
 from pymongo import MongoClient
@@ -85,7 +87,7 @@ def get_app(config):
     """
     config = _put_configuration_defaults(config)
 
-    task_directory = config["tasks_directory"]
+
     download_directory = config.get("download_directory", "lti_download")
     default_allowed_file_extensions = config['allowed_file_extensions']
     default_max_file_size = config['max_file_size']
@@ -101,7 +103,37 @@ def get_app(config):
     database = mongo_client[config.get('mongo_opt', {}).get('database', 'INGInious')]
     gridfs = GridFS(database)
 
-    fs_provider = LocalFSProvider(task_directory)
+    # Create the FS provider
+    if "fs" in config:
+        if "module" not in config["fs"]:
+            print("Key 'module' should be defined for the filesystem provider ('fs' configuration option)", file=sys.stderr)
+            exit(1)
+        fs_include = config["fs"]["module"].split(".")
+        try:
+            module = importlib.import_module(".".join(fs_include[:-1]))
+            fs_class = getattr(module, fs_include[-1])
+            fs_args_needed = fs_class.get_needed_args()
+        except:
+            print("Unable to load class " + config["fs"]["module"], file=sys.stderr)
+            raise
+
+        fs_args = {}
+        for arg_name, (arg_type, arg_required, _) in fs_args_needed.items():
+            if arg_name in config["fs"]:
+                fs_args[arg_name] = arg_type(config["fs"][arg_name])
+            elif arg_required:
+                print("fs option {} is required".format(arg_name), file=sys.stderr)
+                exit(1)
+
+        try:
+            fs_provider = fs_class.init_from_args(**fs_args)
+        except:
+            print("Unable to load class " + config["fs"]["module"], file=sys.stderr)
+            raise
+    else:
+        task_directory = config["tasks_directory"]
+        fs_provider = LocalFSProvider(task_directory)
+
     course_factory, task_factory = create_factories(fs_provider, plugin_manager, FrontendCourse, FrontendTask)
 
     #
