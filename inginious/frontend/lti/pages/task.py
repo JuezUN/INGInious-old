@@ -4,7 +4,6 @@
 # more information about the licensing of this file.
 
 """ Main page for the LTI provider. Displays a task and allow to answer to it. """
-import os
 import posixpath
 import base64
 import json

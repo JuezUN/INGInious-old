@@ -5,7 +5,6 @@
 
 """ Manages batch containers """
 import logging
-import os
 import tempfile
 import tarfile
 from datetime import datetime

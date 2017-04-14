@@ -7,7 +7,6 @@
 import base64
 import json
 import mimetypes
-import os
 import posixpath
 import urllib.request, urllib.parse, urllib.error
 
