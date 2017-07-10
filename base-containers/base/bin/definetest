@@ -1,0 +1,19 @@
+#!/bin/python3
+# -*- coding: utf-8 -*-
+#
+# This file is part of INGInious. See the LICENSE and the COPYRIGHTS files for
+# more information about the licensing of this file.
+
+import argparse
+import inginious_c.tests
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, description='Set the tag/value of a test.\n')
+parser.add_argument('tag', help="tag of the test")
+parser.add_argument('value', help="value associated with the tag")
+args = parser.parse_args()
+
+tag = args.tag
+value = args.value
+
+# Doing the real stuff
+inginious_c.tests.set_result(tag, value)
