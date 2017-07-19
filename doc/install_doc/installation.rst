@@ -105,11 +105,11 @@ In the later case, you'll need to install Python 3.5+, MongoDB, LibTidy and LibZ
 Installing INGInious
 --------------------
 
-The recommended setup is to install INGInious via pip and the master branch of the INGInious git repository.
-This allows you to use the latest development version. This version is currently the supported one for issues.
+The recommended setup is to install INGInious via pip and the INGInious git repository.
+This allows you to use the latest version.
 ::
 
-    $ pip3 install --upgrade git+https://github.com/UCL-INGI/INGInious.git
+    $ pip3 install --upgrade git+https://github.com/UCL-INGI/INGInious.git@v0.4
 
 This will automatically upgrade an existing version.
 
@@ -120,7 +120,7 @@ This will automatically upgrade an existing version.
 
    ::
 
-       $ pip3 install --upgrade git+https://github.com/UCL-INGI/INGInious.git#egg=INGInious[cgi,ldap]
+       $ pip3 install --upgrade git+https://github.com/UCL-INGI/INGInious.git@v0.4
 
 Some releases are also published on Pipy. However, no support is provided for these versions now. To install
 the latest previous release:
