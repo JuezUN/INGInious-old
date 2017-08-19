@@ -78,7 +78,7 @@ def _put_configuration_defaults(config):
     if 'allowed_file_extensions' not in config:
         config['allowed_file_extensions'] = [".c", ".cpp", ".java", ".oz", ".zip", ".tar.gz", ".tar.bz2", ".txt"]
     if 'max_file_size' not in config:
-        config['max_file_size'] = 1024 * 1024
+        config['max_file_size'] = 1024 * 1024 * 5
     return config
 
 
