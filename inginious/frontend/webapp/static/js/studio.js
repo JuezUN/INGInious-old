@@ -763,9 +763,9 @@ function studio_add_test_case(test_case)
 
     studio_grader_test_case_sequence++;
 
-    var firs_row = (studio_grader_test_case_sequence == studio_grader_test_case_removed+1)
+    var first_row = (studio_grader_test_case_sequence == studio_grader_test_case_removed+1)
 
-    if(firs_row){
+    if(first_row){
       var header = "<div class='row' id='grader_test_cases_header'><div class='form-group col-xs-12' style='text-align: center;'>";
       header += "<div class='col-xs-3'><label>Input file</label></div>";
       header += "<div class='col-xs-3'><label>Output file</label></div>";
