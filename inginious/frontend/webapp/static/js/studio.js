@@ -723,7 +723,7 @@ function studio_get_feedback(sid)
 }
 
 var studio_grader_test_case_sequence = 0;
-var studio_grader_test_case_removed = 0;
+var count_grader_test_cases = 0;
 
 function studio_add_test_case_from_form()
 {
@@ -762,17 +762,12 @@ function studio_add_test_case(test_case)
       test_case["diff_shown"]);
 
     studio_grader_test_case_sequence++;
+    count_grader_test_cases++;
 
-    var first_row = (studio_grader_test_case_sequence == studio_grader_test_case_removed+1)
+    var first_row = (count_grader_test_cases == 1)
 
     if(first_row){
-      var header = "<div class='row' id='grader_test_cases_header'><div class='form-group col-xs-12' style='text-align: center;'>";
-      header += "<div class='col-xs-3'><label>Input file</label></div>";
-      header += "<div class='col-xs-3'><label>Output file</label></div>";
-      header += "<div class='col-xs-2'><label>Weight</label></div>"
-      header += "<div class='col-xs-2'><label>Differences shown</label></div>"
-      header += "<div class='col-xs-2'><label></label></div></div></div>"
-      $('#grader_test_cases_container').append(header);
+      $('#grader_test_cases_header').show();
     }
 
     $('#grader_test_cases_container').append(templateElement);
@@ -786,9 +781,9 @@ function studio_load_grader_test_cases(test_cases) {
 
 function studio_remove_test_case(id) {
     $("#grader_test_cases_" + id).remove();
-    studio_grader_test_case_removed++;
-    if(studio_grader_test_case_sequence == studio_grader_test_case_removed){
-      $("#grader_test_cases_header").remove();
+    count_grader_test_cases--;
+    if(count_grader_test_cases == 0){
+      $('#grader_test_cases_header').hide();
     }
 }
 
