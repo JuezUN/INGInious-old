@@ -209,6 +209,7 @@ class CourseEditTask(INGIniousAdminPage):
             return json.dumps({"status": "error", "message": "'Diff context lines' must be positive"})
 
         data["grader_compute_diffs"] = "grader_compute_diffs" in data
+        data["treat_non_zero_as_runtime_error"] = "treat_non_zero_as_runtime_error" in data
         data["generate_grader"] = "generate_grader" in data
 
         grader_test_cases = self.dict_from_prefix("grader_test_cases", data) or OrderedDict()
@@ -257,6 +258,7 @@ class CourseEditTask(INGIniousAdminPage):
             weights = [test_case["weight"] for test_case in data["grader_test_cases"]]
             options = {
                 "compute_diff": data["grader_compute_diffs"],
+                "treat_non_zero_as_runtime_error": data["treat_non_zero_as_runtime_error"],
                 "diff_max_lines": data["grader_diff_max_lines"],
                 "diff_context_lines": data["grader_diff_context_lines"],
                 "output_diff_for": [test_case["input_file"] for test_case in data["grader_test_cases"]
