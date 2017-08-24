@@ -64,7 +64,7 @@ $#
     <div class="col-sm-8">
         <div class="checkbox"><label>
             <input type="checkbox" id="treat_non_zero_as_runtime_error" name="treat_non_zero_as_runtime_error"
-                   $if task_data.get('treat_non_zero_as_runtime_error', False):
+                   $if task_data.get('treat_non_zero_as_runtime_error', True):
                        checked="checked"
             />&nbsp;
         </label></div>
