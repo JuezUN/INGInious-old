@@ -723,7 +723,7 @@ function studio_get_feedback(sid)
 }
 
 var studio_grader_test_case_sequence = 0;
-var count_grader_test_cases = 0;
+var grader_test_cases_count = 0;
 
 function studio_add_test_case_from_form()
 {
@@ -762,9 +762,9 @@ function studio_add_test_case(test_case)
       test_case["diff_shown"]);
 
     studio_grader_test_case_sequence++;
-    count_grader_test_cases++;
+    grader_test_cases_count++;
 
-    var first_row = (count_grader_test_cases == 1)
+    var first_row = (grader_test_cases_count == 1);
 
     if(first_row){
       $('#grader_test_cases_header').show();
@@ -781,8 +781,8 @@ function studio_load_grader_test_cases(test_cases) {
 
 function studio_remove_test_case(id) {
     $("#grader_test_cases_" + id).remove();
-    count_grader_test_cases--;
-    if(count_grader_test_cases == 0){
+    grader_test_cases_count--;
+    if(grader_test_cases_count == 0){
       $('#grader_test_cases_header').hide();
     }
 }
