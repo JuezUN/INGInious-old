@@ -723,6 +723,7 @@ function studio_get_feedback(sid)
 }
 
 var studio_grader_test_case_sequence = 0;
+var grader_test_cases_count = 0;
 
 function studio_add_test_case_from_form()
 {
@@ -760,9 +761,16 @@ function studio_add_test_case(test_case)
     templateElement.find("#grader_test_cases_" + test_id + "_diff_shown").prop('checked',
       test_case["diff_shown"]);
 
-    $('#grader_test_cases_container').append(templateElement);
-
     studio_grader_test_case_sequence++;
+    grader_test_cases_count++;
+
+    var first_row = (grader_test_cases_count == 1);
+
+    if(first_row){
+      $('#grader_test_cases_header').show();
+    }
+
+    $('#grader_test_cases_container').append(templateElement);
 }
 
 function studio_load_grader_test_cases(test_cases) {
@@ -773,6 +781,10 @@ function studio_load_grader_test_cases(test_cases) {
 
 function studio_remove_test_case(id) {
     $("#grader_test_cases_" + id).remove();
+    grader_test_cases_count--;
+    if(grader_test_cases_count == 0){
+      $('#grader_test_cases_header').hide();
+    }
 }
 
 function studio_update_grader_problems() {
