@@ -1,0 +1,5 @@
+from .pages import StatisticsPage, StaticResourcePage
+
+def init(plugin_manager, course_factory, client, config):
+    plugin_manager.add_page("/statistics", StatisticsPage)
+    plugin_manager.add_page(r'/static/statistics/(.*)', StaticResourcePage)
