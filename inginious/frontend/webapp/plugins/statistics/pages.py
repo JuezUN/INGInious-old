@@ -45,30 +45,35 @@ class UserStatisticsPage(INGIniousAuthPage):
         self.template_helper.add_javascript("https://cdn.plot.ly/plotly-1.30.0.min.js")
         self.template_helper.add_javascript("static/statistics/js/user_statistics.js")
 
-        username = self.user_manager.session_username()
-        submissions = self.database.submissions.find({"username": username}).sort("submitted_on")
-
-        json_data = {"x": [], "y": []}
-        for submission in submissions:
-            json_data["x"].append(str(submission["submitted_on"]))
-            json_data["y"].append(str(submission["grade"]))
-
-        submission_per_task_json = self.submission_per_task()
+        grades_per_task_json = self.grade_per_task()
+        submissions_per_task_json = self.submissions_per_task()
 
         return(
-            self.template_helper.get_custom_renderer(_BASE_RENDERER_PATH).user_statistics(json.dumps(json_data),submission_per_task_json)
+            self.template_helper.get_custom_renderer(_BASE_RENDERER_PATH).user_statistics(grades_per_task_json, submissions_per_task_json)
         )
 
-    def submission_per_task(self):
-
+    def grade_per_task(self):
         username = self.user_manager.session_username()
         user_tasks = self.database.user_tasks.find({"username": username})
 
-        json_data = {"x": [], "y": [], "text":[]}
+        data_dict = {"x": [], "y": [], "text": []}
         for user_task in user_tasks:
             submission = self.database.submissions.find_one({"_id": user_task["submissionid"] })
-            json_data["x"].append(str(submission["submitted_on"]))
-            json_data["y"].append(str(user_task["tried"]))
-            json_data["text"].append(str(submission["taskid"]))
+            data_dict["x"].append(str(submission["submitted_on"]))
+            data_dict["y"].append(str(user_task["grade"]))
+            data_dict["text"].append(str(submission["taskid"]))
 
-        return json.dumps(json_data)
+        return json.dumps(data_dict)
+
+    def submissions_per_task(self):
+        username = self.user_manager.session_username()
+        user_tasks = self.database.user_tasks.find({"username": username})
+
+        data_dict = {"x": [], "y": [], "text": []}
+        for user_task in user_tasks:
+            submission = self.database.submissions.find_one({"_id": user_task["submissionid"] })
+            data_dict["x"].append(str(submission["submitted_on"]))
+            data_dict["y"].append(str(user_task["tried"]))
+            data_dict["text"].append(str(submission["taskid"]))
+
+        return json.dumps(data_dict)
