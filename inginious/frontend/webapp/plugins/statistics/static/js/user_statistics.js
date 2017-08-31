@@ -14,7 +14,7 @@ function plotUserStatistics(data) {
     };
 
 
-    Plotly.newPlot('myDiv', [data], layout);
+    Plotly.newPlot('grades_per_task', [data], layout);
 }
 
 function plotUserTriesPerTask(data) {
@@ -22,7 +22,7 @@ function plotUserTriesPerTask(data) {
     data.mode = 'lines+markers';
 
     var layout = {
-        title: 'Number tries per task',
+        title: 'Attempts per task',
         xaxis: {
             title: 'Date'
         },

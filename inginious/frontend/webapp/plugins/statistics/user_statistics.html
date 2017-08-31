@@ -1,14 +1,14 @@
-$def with(json_data, submission_per_task_json)
+$def with(grades_per_task_json, submission_per_task_json)
 
 $var title: My Statistics
 
-<div id="myDiv" style="width: 480px; height: 400px;"><!-- Plotly chart will be drawn inside this DIV --></div>
+<div id="grades_per_task" style="width: 480px; height: 400px;"><!-- Plotly chart will be drawn inside this DIV --></div>
 
 <div id="tries_per_task" style="width: 480px; height: 400px;"><!-- Plotly chart will be drawn inside this DIV --></div>
 
 <script>
     \$(function() {
-        plotUserStatistics($:json_data);
+        plotUserStatistics($:grades_per_task_json);
         plotUserTriesPerTask($:submission_per_task_json);
     });
 </script>

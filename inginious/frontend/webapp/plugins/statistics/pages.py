@@ -46,34 +46,55 @@ class UserStatisticsPage(INGIniousAuthPage):
         self.template_helper.add_javascript("static/statistics/js/user_statistics.js")
 
         grades_per_task_json = self.grade_per_task()
-        submissions_per_task_json = self.submissions_per_task()
+        attempts_per_task_json = self.attempts_per_task()
 
         return(
-            self.template_helper.get_custom_renderer(_BASE_RENDERER_PATH).user_statistics(grades_per_task_json, submissions_per_task_json)
+            self.template_helper
+                .get_custom_renderer(_BASE_RENDERER_PATH)
+                .user_statistics(
+                    grades_per_task_json, attempts_per_task_json
+                )
         )
 
     def grade_per_task(self):
-        username = self.user_manager.session_username()
-        user_tasks = self.database.user_tasks.find({"username": username})
+        user_tasks = self.user_tasks_information()
 
-        data_dict = {"x": [], "y": [], "text": []}
-        for user_task in user_tasks:
-            submission = self.database.submissions.find_one({"_id": user_task["submissionid"] })
-            data_dict["x"].append(str(submission["submitted_on"]))
-            data_dict["y"].append(str(user_task["grade"]))
-            data_dict["text"].append(str(submission["taskid"]))
+        data_dict = {
+            "x": user_tasks["submissions_date"],
+            "y": user_tasks["grades"],
+            "text": user_tasks["task_names"]
+        }
 
         return json.dumps(data_dict)
 
-    def submissions_per_task(self):
+    def attempts_per_task(self):
+        user_tasks = self.user_tasks_information()
+
+        data_dict = {
+            "x": user_tasks["submissions_date"],
+            "y": user_tasks["times_tried"],
+            "text": user_tasks["task_names"]
+        }
+
+        return json.dumps(data_dict)
+
+    def user_tasks_information(self):
         username = self.user_manager.session_username()
         user_tasks = self.database.user_tasks.find({"username": username})
 
-        data_dict = {"x": [], "y": [], "text": []}
+        info_dict = {
+            "submissions_date": [],
+            "grades": [],
+            "task_names": [],
+            "times_tried": []
+        }
+
         for user_task in user_tasks:
             submission = self.database.submissions.find_one({"_id": user_task["submissionid"] })
-            data_dict["x"].append(str(submission["submitted_on"]))
-            data_dict["y"].append(str(user_task["tried"]))
-            data_dict["text"].append(str(submission["taskid"]))
 
-        return json.dumps(data_dict)
+            info_dict["submissions_date"].append(str(submission["submitted_on"]))
+            info_dict["grades"].append(str(user_task["grade"]))
+            info_dict["task_names"].append(str(user_task["taskid"]))
+            info_dict["times_tried"].append(str(user_task["tried"]))
+
+        return info_dict
