@@ -89,12 +89,26 @@ class UserStatisticsPage(INGIniousAuthPage):
             "times_tried": []
         }
 
-        for user_task in user_tasks:
-            submission = self.database.submissions.find_one({"_id": user_task["submissionid"] })
+        tuples_for_sorting = []
 
-            info_dict["submissions_date"].append(str(submission["submitted_on"]))
-            info_dict["grades"].append(str(user_task["grade"]))
-            info_dict["task_names"].append(str(user_task["taskid"]))
-            info_dict["times_tried"].append(str(user_task["tried"]))
+        for user_task in user_tasks:
+            user_has_submitted = user_task["submissionid"] is not None
+
+            if user_has_submitted:
+                submission = self.database.submissions.find_one({"_id": user_task["submissionid"] })
+
+                date = str(submission["submitted_on"])
+                grade = str(user_task["grade"])
+                name = str(user_task["taskid"])
+                tried = str(user_task["tried"])
+
+                tuples_for_sorting.append((date, grade, name, tried))
+
+        tasks_sorted_by_date = list(zip(*sorted(tuples_for_sorting)))
+
+        info_dict["submissions_date"] = tasks_sorted_by_date[0]
+        info_dict["grades"] = tasks_sorted_by_date[1]
+        info_dict["task_names"] = tasks_sorted_by_date[2]
+        info_dict["times_tried"] = tasks_sorted_by_date[3]
 
         return info_dict
