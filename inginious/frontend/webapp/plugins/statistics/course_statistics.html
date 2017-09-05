@@ -1,0 +1,29 @@
+$def with (course, statisticsJson)
+
+$var title: $:course.get_name() - Statistics
+
+$def NavbarF():
+    <ol class="nav navbar-nav nav-breadcrumb">
+      <li><a href="$get_homepath()/course/$course.get_id()">$course.get_name()</a></li>
+      <li class="active"><a href="#">Course statistics <span class="sr-only">(current)</span></a></li>
+    </ol>
+
+$var Navbar: $:NavbarF()
+
+<h3>Statistics for course: $:course.get_name()</h3>
+<div class="list-group">
+    <h4>Submissions by result</h4>
+    <div id="statisticsOutcomeDiv" class="statistics-outcome"></div>
+
+    <h4>Submissions by grade</h4>
+    <div id="statisticsGradeDiv" class="statistics-grade"></div>
+</div>
+
+<script type="text/javascript">
+  var statistics = $:(statisticsJson);
+
+  $$(function() {
+    plotOutcomeStatistics("statisticsOutcomeDiv", statistics.by_result);
+    plotGradeStatistics("statisticsGradeDiv", statistics.by_grade);
+  });
+</script>
