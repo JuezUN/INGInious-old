@@ -49,13 +49,12 @@ class UserStatisticsPage(INGIniousAuthPage):
         self.template_helper.add_javascript("static/statistics/js/user_statistics.js")
 
         tries_per_tasks_json = json.dumps(self.get_best_submission(), cls=DateTimeEncoder)
-        return tries_per_tasks_json
 
-        # return (
-        #     self.template_helper
-        #         .get_custom_renderer(_BASE_RENDERER_PATH)
-        #         .user_statistics(tries_per_tasks_json)
-        # )
+        return (
+            self.template_helper
+                .get_custom_renderer(_BASE_RENDERER_PATH)
+                .user_statistics(tries_per_tasks_json)
+        )
 
     def get_best_submission(self):
         username = self.user_manager.session_username()
