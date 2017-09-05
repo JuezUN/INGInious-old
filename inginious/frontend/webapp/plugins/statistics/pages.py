@@ -85,6 +85,13 @@ class UserStatisticsPage(INGIniousAuthPage):
                     }
             },
             {
+                "$sort":
+                    {
+                        "submission.submitted_on": 1
+                    }
+
+            },
+            {
                 "$project":
                     {
                         "_id": 0,
