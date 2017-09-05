@@ -3,6 +3,7 @@ import posixpath
 import urllib
 import os
 import json
+from datetime import datetime
 from inginious.frontend.webapp.pages.utils import INGIniousAuthPage, INGIniousPage
 from inginious.common.filesystems.local import LocalFSProvider
 
@@ -47,13 +48,14 @@ class UserStatisticsPage(INGIniousAuthPage):
         self.template_helper.add_javascript("https://cdn.plot.ly/plotly-1.30.0.min.js")
         self.template_helper.add_javascript("static/statistics/js/user_statistics.js")
 
-        tries_per_tasks_json = json.dumps(self.get_best_submission())
+        tries_per_tasks_json = json.dumps(self.get_best_submission(), cls=DateTimeEncoder)
+        return tries_per_tasks_json
 
-        return (
-            self.template_helper
-                .get_custom_renderer(_BASE_RENDERER_PATH)
-                .user_statistics(tries_per_tasks_json)
-        )
+        # return (
+        #     self.template_helper
+        #         .get_custom_renderer(_BASE_RENDERER_PATH)
+        #         .user_statistics(tries_per_tasks_json)
+        # )
 
     def get_best_submission(self):
         username = self.user_manager.session_username()
@@ -94,7 +96,8 @@ class UserStatisticsPage(INGIniousAuthPage):
                         "result": "$submission.custom.summary_result",
                         "taskid": 1,
                         "tried": 1,
-                        "grade": 1
+                        "grade": 1,
+                        "date": "$submission.submitted_on"
                     }
             },
             {
@@ -106,3 +109,9 @@ class UserStatisticsPage(INGIniousAuthPage):
         ])
 
         return list(best_submissions)
+
+
+class DateTimeEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, datetime):
+            return o.isoformat()
