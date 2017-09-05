@@ -9,6 +9,7 @@ from inginious.common.filesystems.local import LocalFSProvider
 _BASE_RENDERER_PATH = 'frontend/webapp/plugins/statistics'
 _BASE_STATIC_FOLDER = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
 
+
 class StaticResourcePage(INGIniousPage):
     def GET(self, path):
         path_norm = posixpath.normpath(urllib.parse.unquote(path))
@@ -24,6 +25,7 @@ class StaticResourcePage(INGIniousPage):
 
         raise web.notfound()
 
+
 class StatisticsPage(INGIniousAuthPage):
     def GET_AUTH(self):
         username = self.user_manager.session_username()
@@ -32,11 +34,11 @@ class StatisticsPage(INGIniousAuthPage):
         self.template_helper.add_javascript("static/statistics/js/statistics.js")
 
         total_users = self.database.users.count()
-        total_submissions = self.database.submissions.count({"grade": { "$gte": 90}})
+        total_submissions = self.database.submissions.count({"grade": {"$gte": 90}})
 
         return (
             self.template_helper.get_custom_renderer(_BASE_RENDERER_PATH).main(username, total_users,
-                total_submissions)
+                                                                               total_submissions)
         )
 
 
@@ -45,70 +47,59 @@ class UserStatisticsPage(INGIniousAuthPage):
         self.template_helper.add_javascript("https://cdn.plot.ly/plotly-1.30.0.min.js")
         self.template_helper.add_javascript("static/statistics/js/user_statistics.js")
 
-        grades_per_task_json = self.grade_per_task()
-        attempts_per_task_json = self.attempts_per_task()
+        return str([str(s) for s in self.get_best_submission()])
 
-        return(
-            self.template_helper
-                .get_custom_renderer(_BASE_RENDERER_PATH)
-                .user_statistics(
-                    grades_per_task_json, attempts_per_task_json
-                )
-        )
+        # return (
+        #     self.template_helper
+        #         .get_custom_renderer(_BASE_RENDERER_PATH)
+        #         .user_statistics(
+        #         grades_per_task_json,
+        #         attempts_per_task_json,
+        #
+        #     )
+        # )
 
-    def grade_per_task(self):
-        user_tasks = self.user_tasks_information()
-
-        data_dict = {
-            "x": user_tasks["submissions_date"],
-            "y": user_tasks["grades"],
-            "text": user_tasks["task_names"]
-        }
-
-        return json.dumps(data_dict)
-
-    def attempts_per_task(self):
-        user_tasks = self.user_tasks_information()
-
-        data_dict = {
-            "x": user_tasks["submissions_date"],
-            "y": user_tasks["times_tried"],
-            "text": user_tasks["task_names"]
-        }
-
-        return json.dumps(data_dict)
-
-    def user_tasks_information(self):
+    def get_best_submission(self):
         username = self.user_manager.session_username()
-        user_tasks = self.database.user_tasks.find({"username": username})
 
-        info_dict = {
-            "submissions_date": [],
-            "grades": [],
-            "task_names": [],
-            "times_tried": []
-        }
+        best_submissions = self.database.user_tasks.aggregate([
+            {
+                "$match":
+                    {
+                        "username": username
+                    }
+            },
+            {
+                "$lookup":
+                    {
+                        "from": "submissions",
+                        "localField": "submissionid",
+                        "foreignField": "_id",
+                        "as": "submission"
+                    }
+            },
+            {
+                "$unwind":
+                    {
+                        "path": "$submission"
+                    }
+            },
+            {
+                "$project":
+                    {
+                        "_id": 0,
+                        "result": "$submission.custom.summary_result",
+                        "taskid": 1,
+                        "tried": 1,
+                        "grade": 1
+                    }
+            },
+            {
+                "$match":
+                    {
+                        "result": {"$ne": None}
+                    }
+            }
+        ])
 
-        tuples_for_sorting = []
-
-        for user_task in user_tasks:
-            user_has_submitted = user_task["submissionid"] is not None
-
-            if user_has_submitted:
-                submission = self.database.submissions.find_one({"_id": user_task["submissionid"] })
-
-                date = str(submission["submitted_on"])
-                grade = str(user_task["grade"])
-                name = str(user_task["taskid"])
-                tried = str(user_task["tried"])
-
-                tuples_for_sorting.append((date, grade, name, tried))
-
-        tasks_sorted_by_date = list(zip(*sorted(tuples_for_sorting)))
-
-        info_dict["submissions_date"] = tasks_sorted_by_date[0]
-        info_dict["grades"] = tasks_sorted_by_date[1]
-        info_dict["task_names"] = tasks_sorted_by_date[2]
-        info_dict["times_tried"] = tasks_sorted_by_date[3]
-
-        return info_dict
+        return list(best_submissions)
