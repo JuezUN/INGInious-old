@@ -5,6 +5,7 @@ import os
 from inginious.frontend.webapp.pages.utils import INGIniousAuthPage, INGIniousPage
 from inginious.frontend.webapp.pages.course_admin.utils import INGIniousAdminPage
 from inginious.common.filesystems.local import LocalFSProvider
+from bson.json_util import dumps
 import json
 
 _BASE_RENDERER_PATH = 'frontend/webapp/plugins/statistics'
@@ -44,43 +45,38 @@ def statistics_course_admin_menu_hook(course):
     course_statistics_link = ""
     return ("statistics", '<i class="fa fa-bar-chart" aria-hidden="true"></i> Course statistics')
 
+
 class CourseStatisticsPage(INGIniousAdminPage):
+
     def GET_AUTH(self, course_id):
         course, _ = self.get_course_and_check_rights(course_id)
 
-        statistics_by_grade = self.database.submissions.aggregate([
-            {"$match": {"courseid": course_id}},
+        statistics_by_verdict = self.database.submissions.aggregate([
+            {"$match": {"courseid": course_id, "custom.summary_result": {"$ne": None}}},
             {
                 "$group": {
-                    "_id": {"grade": {"$ceil": "$grade"}},
+                    "_id": {"summary_result": "$custom.summary_result",
+                            "task_id": "$taskid"},
                     "count": {"$sum": 1}
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0,
+                    "task_id": "$_id.task_id",
+                    "summary_result": "$_id.summary_result",
+                    "count": 1
                 }
             }
         ])
-
-        statistics_by_result = self.database.submissions.aggregate([
-            {"$match": {"courseid": course_id}},
-            {
-                "$group": {
-                    "_id": {"result": "$result"},
-                    "count": {"$sum": 1}
-                }
-            }
-        ])
-
-        statistics_by_grade = [
-            {"grade": e["_id"]["grade"], "count": e["count"]} for e in statistics_by_grade
-        ]
-        statistics_by_result = [
-            {"result": e["_id"]["result"], "count": e["count"]} for e in statistics_by_result
-        ]
 
         statistics = {
-            "by_grade": statistics_by_grade,
-            "by_result": statistics_by_result
+            "by_verdict": statistics_by_verdict
         }
 
-        statisticsJson = json.dumps(statistics)
+        statisticsJson = dumps(statistics)
+
+
 
         self.template_helper.add_javascript("https://cdn.plot.ly/plotly-1.30.0.min.js")
         self.template_helper.add_javascript("/static/statistics/js/statistics.js")

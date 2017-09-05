@@ -1,38 +1,47 @@
 
-function transformObjectToPlotData(data, xFunction, yFunction) {
+function transformObjectToPlotData(data, xFunction, yFunction, verdict) {
+
   var plotData = {
     x: [],
-    y: []
+    y: [],
+    name: verdict,
+    type: 'bar'
   };
 
   for(var i = 0; i < data.length; ++i) {
-    plotData.x.push(xFunction(data[i]));
-    plotData.y.push(yFunction(data[i]));
+    if(data[i].summary_result === verdict){
+      plotData.x.push(xFunction(data[i]));
+      plotData.y.push(yFunction(data[i]));
+    }
+    else{
+      plotData.x.push(xFunction(data[i]));
+      plotData.y.push(0);
+    }
   }
 
   return plotData;
 }
 
-function plotOutcomeStatistics(containerId, data) {
-  var plotData = transformObjectToPlotData(data, function(element) {
-    return element.result || "other";
-  }, function(element) {
-    return element.count;
-  });
-
-  plotData["type"] = "bar";
-
-  Plotly.newPlot(containerId, [plotData]);
+function getSummaryResult(element){
+  return element.task_id;
 }
 
-function plotGradeStatistics(containerId, data) {
-  var plotData = transformObjectToPlotData(data, function(element) {
-    return element.grade || "unavailable";
-  }, function(element) {
-    return element.count;
-  });
+function getCount(element){
+  return element.count;
+}
 
-  plotData["type"] = "bar";
+function plotVerdictStatistics(containerId, data){
 
-  Plotly.newPlot(containerId, [plotData]);
+  var compilation_error_data = transformObjectToPlotData(data, getSummaryResult, getCount, "COMPILATION_ERROR");
+  var time_limit_data = transformObjectToPlotData(data, getSummaryResult, getCount, "TIME_LIMIT_EXCEEDED");
+  var memory_limit_data = transformObjectToPlotData(data, getSummaryResult, getCount, "MEMORY_LIMIT_EXCEEDED");
+  var runtime_error_data = transformObjectToPlotData(data, getSummaryResult, getCount, "RUNTIME_ERROR");
+  var wrong_answer_data = transformObjectToPlotData(data, getSummaryResult, getCount, "WRONG_ANSWER");
+  var internal_error_data = transformObjectToPlotData(data, getSummaryResult, getCount, "INTERNAL_ERROR");
+  var accepted_data = transformObjectToPlotData(data, getSummaryResult, getCount, "ACCEPTED");
+
+  var data = [compilation_error_data, time_limit_data, memory_limit_data, runtime_error_data, wrong_answer_data, internal_error_data, accepted_data];
+
+  var layout = {barmode: 'stack'};
+  Plotly.newPlot(containerId, data, layout);
 }
