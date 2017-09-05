@@ -13,26 +13,35 @@ function transformObjectToPlotData(data, xFunction, yFunction) {
   return plotData;
 }
 
-function plotOutcomeStatistics(containerId, data) {
-  var plotData = transformObjectToPlotData(data, function(element) {
-    return element.result || "other";
-  }, function(element) {
-    return element.count;
-  });
-
-  plotData["type"] = "bar";
-
-  Plotly.newPlot(containerId, [plotData]);
-}
-
 function plotGradeStatistics(containerId, data) {
-  var plotData = transformObjectToPlotData(data, function(element) {
-    return element.grade || "unavailable";
-  }, function(element) {
-    return element.count;
-  });
+  var STUDENT_COUNT_TO_PIXELS = 1e-1;
+  var plotData = {
+    mode: 'markers',
+    x: [],
+    y: [],
+    text: [],
+    marker: {
+      sizemode: "diameter",
+      size: [],
+      sizeref: STUDENT_COUNT_TO_PIXELS
+    }
+  };
 
-  plotData["type"] = "bar";
+  for(var i = 0; i < data.length; ++i) {
+    var grades = data[i].grades;
+    for(var j = 0; j < grades.length; ++j) {
+      plotData.x.push(data[i].task_name);
+      plotData.y.push(grades[j].grade);
+      plotData.text.push("Students: " + grades[j].count);
+      plotData.marker.size.push(grades[j].count);
+    }
+  }
 
-  Plotly.newPlot(containerId, [plotData]);
+  var layout = {
+    xaxis: {title: 'Task name', type: 'category'},
+    yaxis: {title: 'Grade', type: 'linear'},
+    hovermode: 'closest'
+  };
+
+  Plotly.newPlot(containerId, [plotData], layout);
 }

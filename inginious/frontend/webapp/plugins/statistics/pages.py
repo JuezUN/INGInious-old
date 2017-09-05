@@ -48,36 +48,41 @@ class CourseStatisticsPage(INGIniousAdminPage):
     def GET_AUTH(self, course_id):
         course, _ = self.get_course_and_check_rights(course_id)
 
-        statistics_by_grade = self.database.submissions.aggregate([
+        statistics_by_grade = self.database.user_tasks.aggregate([
             {"$match": {"courseid": course_id}},
             {
                 "$group": {
-                    "_id": {"grade": {"$ceil": "$grade"}},
+                    "_id": {"grade": {"$ceil": "$grade"}, "task": "$taskid"},
                     "count": {"$sum": 1}
                 }
             }
         ])
 
-        statistics_by_result = self.database.submissions.aggregate([
-            {"$match": {"courseid": course_id}},
-            {
-                "$group": {
-                    "_id": {"result": "$result"},
-                    "count": {"$sum": 1}
-                }
-            }
-        ])
+        course_tasks = course.get_tasks()
+        sorted_tasks = sorted(course_tasks.values(), key=lambda task: task.get_order())
+
+        task_id_to_statistics = {}
+        for element in statistics_by_grade:
+            task_id = element["_id"]["task"]
+
+            if task_id not in task_id_to_statistics:
+                task_id_to_statistics[task_id] = []
+
+            task_id_to_statistics[task_id].append({
+                "grade": element["_id"]["grade"],
+                "count": element["count"]
+            })
 
         statistics_by_grade = [
-            {"grade": e["_id"]["grade"], "count": e["count"]} for e in statistics_by_grade
-        ]
-        statistics_by_result = [
-            {"result": e["_id"]["result"], "count": e["count"]} for e in statistics_by_result
+            {
+                "task_id": task.get_id(),
+                "task_name": task.get_name(),
+                "grades": task_id_to_statistics.get(task.get_id(), [])
+            } for task in sorted_tasks
         ]
 
         statistics = {
             "by_grade": statistics_by_grade,
-            "by_result": statistics_by_result
         }
 
         statisticsJson = json.dumps(statistics)

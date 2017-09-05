@@ -12,9 +12,6 @@ $var Navbar: $:NavbarF()
 
 <h3>Statistics for course: $:course.get_name()</h3>
 <div class="list-group">
-    <h4>Submissions by result</h4>
-    <div id="statisticsOutcomeDiv" class="statistics-outcome"></div>
-
     <h4>Submissions by grade</h4>
     <div id="statisticsGradeDiv" class="statistics-grade"></div>
 </div>
@@ -23,7 +20,6 @@ $var Navbar: $:NavbarF()
   var statistics = $:(statisticsJson);
 
   $$(function() {
-    plotOutcomeStatistics("statisticsOutcomeDiv", statistics.by_result);
     plotGradeStatistics("statisticsGradeDiv", statistics.by_grade);
   });
 </script>
