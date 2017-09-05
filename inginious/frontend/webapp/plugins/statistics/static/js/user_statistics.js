@@ -3,8 +3,12 @@ function plotTriesPerTasks(tries_per_tasks) {
 
     var results =
         [
-            "WRONG_ANSWER",
             "COMPILATION_ERROR",
+            "TIME_LIMIT_EXCEEDED",
+            "MEMORY_LIMIT_EXCEEDED",
+            "RUNTIME_ERROR",
+            "WRONG_ANSWER",
+            "INTERNAL_ERROR",
             "ACCEPTED"
         ];
 
