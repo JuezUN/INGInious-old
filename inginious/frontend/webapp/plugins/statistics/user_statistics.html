@@ -1,4 +1,4 @@
-$def with(grades_per_task_json, submission_per_task_json)
+$def with(tries_per_tasks_json)
 
 $var title: My Statistics
 
@@ -8,7 +8,6 @@ $var title: My Statistics
 
 <script>
     \$(function() {
-        plotUserStatistics($:grades_per_task_json);
-        plotUserTriesPerTask($:submission_per_task_json);
+        plotTriesPerTasks($:tries_per_tasks_json);
     });
 </script>

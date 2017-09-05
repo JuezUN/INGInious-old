@@ -47,17 +47,13 @@ class UserStatisticsPage(INGIniousAuthPage):
         self.template_helper.add_javascript("https://cdn.plot.ly/plotly-1.30.0.min.js")
         self.template_helper.add_javascript("static/statistics/js/user_statistics.js")
 
-        return str([str(s) for s in self.get_best_submission()])
+        tries_per_tasks_json = json.dumps(self.get_best_submission())
 
-        # return (
-        #     self.template_helper
-        #         .get_custom_renderer(_BASE_RENDERER_PATH)
-        #         .user_statistics(
-        #         grades_per_task_json,
-        #         attempts_per_task_json,
-        #
-        #     )
-        # )
+        return (
+            self.template_helper
+                .get_custom_renderer(_BASE_RENDERER_PATH)
+                .user_statistics(tries_per_tasks_json)
+        )
 
     def get_best_submission(self):
         username = self.user_manager.session_username()
