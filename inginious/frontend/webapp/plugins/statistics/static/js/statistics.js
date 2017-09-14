@@ -14,16 +14,23 @@ function transformObjectToPlotData(data, xFunction, yFunction) {
 }
 
 function plotGradeStatistics(containerId, data) {
-  var STUDENT_COUNT_TO_PIXELS = 1e-1;
+  var allGrades = _.flatMap(data, function(item) {
+    return item.grades;
+  });
+
+  var studentCountToPixels = 1e-03 * _.meanBy(allGrades, function(item) {
+    return item.count;
+  });
+
   var plotData = {
     mode: 'markers',
     x: [],
     y: [],
     text: [],
     marker: {
-      sizemode: "diameter",
+      sizemode: "area",
       size: [],
-      sizeref: STUDENT_COUNT_TO_PIXELS
+      sizeref: studentCountToPixels
     }
   };
 
