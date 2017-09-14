@@ -43,6 +43,16 @@ class StatisticsPage(INGIniousAuthPage):
         )
 
 
+def statistics_course_menu_hook(course, template_helper):
+    return """
+            <h3>Statistics</h3>
+            <a class="list-group-item list-group-item-info"
+                href="/my_statistics">
+                <i class="fa fa-group fa-fw"></i>
+                My Statistics
+            </a>"""
+
+
 class UserStatisticsPage(INGIniousAuthPage):
     def GET_AUTH(self, *args, **kwargs):
         self.template_helper.add_javascript("https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.3.6/papaparse.min.js")
