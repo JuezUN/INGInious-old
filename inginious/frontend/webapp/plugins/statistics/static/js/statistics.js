@@ -39,7 +39,7 @@ function plotGradeStatistics(containerId, data) {
 
   var layout = {
     xaxis: {title: 'Task name', type: 'category'},
-    yaxis: {title: 'Grade', type: 'linear'},
+    yaxis: {title: 'Grade', type: 'linear', range: [-10, 110]},
     hovermode: 'closest'
   };
 
