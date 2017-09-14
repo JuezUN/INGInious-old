@@ -61,10 +61,35 @@ function plotTriesPerTasks(tries_per_tasks) {
 function getRatio(tries_per_tasks) {
     var sum = 0.0;
 
-    for(var i = 0 ; i < tries_per_tasks.length ; i++){
+    for (var i = 0; i < tries_per_tasks.length; i++) {
         sum += tries_per_tasks[i].tried;
     }
 
     var avg = sum / tries_per_tasks.length;
     return avg / 1000;
 }
+
+//Global namespace
+var UserStatistics = {};
+
+var CSVConverter = (function () {
+    function CSVConverter(data) {
+        this.data = data;
+    }
+
+    CSVConverter.prototype.downloadCSV = function () {
+        var filename = 'export.csv';
+
+        var csv = Papa.unparse(this.data);
+        csv = 'data:text/csv;charset=utf-8,' + csv;
+
+        var data = encodeURI(csv);
+
+        var link = document.createElement('a');
+        link.setAttribute('href', data);
+        link.setAttribute('download', filename);
+        link.click();
+    };
+
+    return CSVConverter;
+}());

@@ -3,9 +3,11 @@ $def with(tries_per_tasks_json)
 $var title: My Statistics
 
 <div id="tries_per_task"  style="width: 100%";><!-- Plotly chart will be drawn inside this DIV --></div>
+<a href='#' onclick='UserStatistics.csvConverter.downloadCSV();'>Download CSV</a>
 
 <script>
     \$(function() {
         plotTriesPerTasks($:tries_per_tasks_json);
+        UserStatistics.csvConverter = new CSVConverter($:tries_per_tasks_json);
     });
 </script>
