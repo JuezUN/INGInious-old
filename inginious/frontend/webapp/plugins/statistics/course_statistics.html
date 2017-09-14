@@ -14,12 +14,16 @@ $var Navbar: $:NavbarF()
 <div class="list-group">
     <h4>Submissions by grade</h4>
     <div id="statisticsGradeDiv" class="statistics-grade"></div>
+
+    <h4>Final grade distribution</h4>
+    <div id="statisticsGradeDistributionDiv" class="statistics-grade"></div>
 </div>
 
 <script type="text/javascript">
   var statistics = $:(statisticsJson);
 
   $$(function() {
-    plotGradeStatistics("statisticsGradeDiv", statistics.by_grade);
+    plotGradeStatistics("statisticsGradeDiv", statistics.by_grade_count);
+    plotGradeDistributionStatistics("statisticsGradeDistributionDiv", statistics.by_grade_distribution);
   });
 </script>

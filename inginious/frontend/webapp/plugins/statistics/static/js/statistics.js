@@ -1,18 +1,3 @@
-
-function transformObjectToPlotData(data, xFunction, yFunction) {
-  var plotData = {
-    x: [],
-    y: []
-  };
-
-  for(var i = 0; i < data.length; ++i) {
-    plotData.x.push(xFunction(data[i]));
-    plotData.y.push(yFunction(data[i]));
-  }
-
-  return plotData;
-}
-
 function plotGradeStatistics(containerId, data) {
   var allGrades = _.flatMap(data, function(item) {
     return item.grades;
@@ -51,4 +36,31 @@ function plotGradeStatistics(containerId, data) {
   };
 
   Plotly.newPlot(containerId, [plotData], layout);
+}
+
+function plotGradeDistributionStatistics(containerId, data) {
+  var plotData = _.map(data, function(item) {
+    return {
+      y: item.grades,
+      name: item.task_name,
+      boxmean: true,
+      type: 'box',
+      marker: {
+        color: 'rgb(8,81,156)',
+        outliercolor: 'rgba(219, 64, 82, 0.6)',
+        line: {
+          outliercolor: 'rgba(219, 64, 82, 1.0)',
+          outlierwidth: 2
+        }
+      },
+      boxpoints: 'suspectedoutliers'
+    };
+  });
+
+  var layout = {
+    xaxis: {title: 'Task name', type: 'category'},
+    yaxis: {title: 'Grade', type: 'linear', range: [-10, 110], zeroline: false}
+  };
+
+  Plotly.newPlot(containerId, plotData, layout);
 }
