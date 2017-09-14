@@ -46,7 +46,6 @@ function plotGradeDistributionStatistics(containerId, data) {
       boxmean: true,
       type: 'box',
       marker: {
-        color: 'rgb(8,81,156)',
         outliercolor: 'rgba(219, 64, 82, 0.6)',
         line: {
           outliercolor: 'rgba(219, 64, 82, 1.0)',
