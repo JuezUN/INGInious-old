@@ -48,15 +48,90 @@ def statistics_course_admin_menu_hook(course):
 
 class CourseStatisticsPage(INGIniousAdminPage):
 
-    def GET_AUTH(self, course_id):
-        course, _ = self.get_course_and_check_rights(course_id)
+    def get_best_statistics_by_verdict(self, course):
+        course_id = course.get_id()
+        statistics_by_verdict = self.database.user_tasks.aggregate([
+                {
+                    "$match":
+                        {
+                            "courseid": course_id
+                        }
+                },
+                {
+                    "$lookup":
+                        {
+                            "from": "submissions",
+                            "localField": "submissionid",
+                            "foreignField": "_id",
+                            "as": "submission"
+                        }
+                },
+                {
+                    "$unwind":
+                        {
+                            "path": "$submission"
+                        }
+                },
+                {
+                    "$group": {
+                        "_id": {"summary_result": "$submission.custom.summary_result",
+                                "taskid": "$taskid"},
+                        "count": {"$sum": 1}
+                    }
+                },
+                {
+                    "$project": {
+                        "_id": 0,
+                        "task_id": "$_id.taskid",
+                        "summary_result": "$_id.summary_result",
+                        "count": 1
+                    }
+                },
+                {
+                    "$match":
+                        {
+                            "summary_result": {"$ne": None}
+                        }
+                }
+            ])
 
+        course_tasks = course.get_tasks()
+        sorted_tasks = sorted(course_tasks.values(), key=lambda task: task.get_order())
+
+        task_id_to_statistics = {}
+        for element in statistics_by_verdict:
+            task_id = element["task_id"]
+
+            if task_id not in task_id_to_statistics:
+                task_id_to_statistics[task_id] = []
+
+            task_id_to_statistics[task_id].append({
+                "count": element["count"],
+                "summary_result": element["summary_result"]
+            })
+
+        statistics_by_verdict = []
+
+        for task in sorted_tasks:
+            _id = task.get_id()
+            verdicts = task_id_to_statistics.get(_id, [])
+            for verdict in verdicts:
+                statistics_by_verdict.append({
+                    "task_id": _id,
+                    "summary_result": verdict["summary_result"],
+                    "count": verdict["count"]
+                })
+        return statistics_by_verdict
+
+    def get_statistics_by_veredict(self, course):
+        course_id = course.get_id()
         statistics_by_verdict = self.database.submissions.aggregate([
             {"$match": {"courseid": course_id, "custom.summary_result": {"$ne": None}}},
             {
                 "$group": {
                     "_id": {"summary_result": "$custom.summary_result",
-                            "task_id": "$taskid"},
+                            "task_id": "$taskid"
+                            },
                     "count": {"$sum": 1}
                 }
             },
@@ -70,13 +145,46 @@ class CourseStatisticsPage(INGIniousAdminPage):
             }
         ])
 
+        course_tasks = course.get_tasks()
+        sorted_tasks = sorted(course_tasks.values(), key=lambda task: task.get_order())
+
+        task_id_to_statistics = {}
+        for element in statistics_by_verdict:
+            task_id = element["task_id"]
+
+            if task_id not in task_id_to_statistics:
+                task_id_to_statistics[task_id] = []
+
+            task_id_to_statistics[task_id].append({
+                "count": element["count"],
+                "summary_result": element["summary_result"]
+            })
+
+        statistics_by_verdict = []
+
+        for task in sorted_tasks:
+            _id = task.get_id()
+            verdicts = task_id_to_statistics.get(_id, [])
+            for verdict in verdicts:
+                statistics_by_verdict.append({
+                    "task_id": _id,
+                    "summary_result": verdict["summary_result"],
+                    "count": verdict["count"]
+                })
+        return statistics_by_verdict
+
+    def GET_AUTH(self, course_id):
+        course, _ = self.get_course_and_check_rights(course_id)
+
+        statistics_by_verdict = self.get_statistics_by_veredict(course)
+        best_statistics_by_verdict = self.get_best_statistics_by_verdict(course)
+
         statistics = {
-            "by_verdict": statistics_by_verdict
+            "by_verdict": statistics_by_verdict,
+            "best_by_verdict": best_statistics_by_verdict
         }
 
         statisticsJson = dumps(statistics)
-
-
 
         self.template_helper.add_javascript("https://cdn.plot.ly/plotly-1.30.0.min.js")
         self.template_helper.add_javascript("/static/statistics/js/statistics.js")

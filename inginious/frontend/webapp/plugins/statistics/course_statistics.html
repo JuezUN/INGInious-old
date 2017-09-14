@@ -13,14 +13,35 @@ $var Navbar: $:NavbarF()
 <h3>Statistics for course: $:course.get_name()</h3>
 <div class="list-group">
     <h4>Submissions by Verdict</h4>
-    <div id="statisticsVerdict" class="statistics-verdict"></div>
+    <div id="statisticsVerdict" class="statistics-verdict" style="height: 500px;"><!-- Plotly chart will be drawn inside this DIV --></div>
+    <div class="normalize" id="normalize_statistics_verdict" style="display: flex;justify-content: center;">
+      <button style="background-color: white;padding: 8px 15px;text-align: center;font-size: 12px;"
+      onclick="plotVerdictStatistics('statisticsVerdict',$statisticsJson)">
+          Toggle normalize
+        </button>
+    </div>
+    <h4>Best Submissions by Verdict</h4>
+    <div id="bestStatisticsVerdict" class="best-statistics-verdict" style="height: 500px;"><!-- Plotly chart will be drawn inside this DIV --></div>
+    <div class="normalize" id="normalize_best_statistics_verdict" style="display: flex;justify-content: center;">
+      <button style="background-color: white;padding: 8px 15px;text-align: center;font-size: 12px;"
+      onclick="plotBestVerdictStatistics('bestStatisticsVerdict',$statisticsJson)">
+          Toggle normalize
+        </button>
+    </div>
 </div>
+
+
 
 <script type="text/javascript">
   var statistics = $:(statisticsJson);
 
   $$(function() {
-    plotVerdictStatistics("statisticsVerdict", statistics.by_verdict);
+    plotVerdictStatistics("statisticsVerdict", statistics);
+
+  });
+
+  $$(function() {
+    plotBestVerdictStatistics("bestStatisticsVerdict", statistics);
 
   });
 </script>
