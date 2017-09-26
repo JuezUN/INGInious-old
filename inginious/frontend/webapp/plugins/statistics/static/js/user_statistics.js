@@ -22,10 +22,10 @@ function plotTriesPerTasks(tries_per_tasks) {
         ];
 
 
-    var resultsDict = {};
+    var plotData = {};
 
     for (var index = 0; index < results.length; index++) {
-        resultsDict[results[index]] =
+        plotData[results[index]] =
             {
                 "mode": "markers",
                 "name": results[index],
@@ -45,17 +45,17 @@ function plotTriesPerTasks(tries_per_tasks) {
     for (var index = 0; index < tries_per_tasks.length; index++) {
         for (var j = 0; j < results.length; j++) {
             if (tries_per_tasks[index].result === results[j]) {
-                resultsDict[results[j]]["x"].push(tries_per_tasks[index].taskid);
-                resultsDict[results[j]]["y"].push(tries_per_tasks[index].grade);
-                resultsDict[results[j]]["text"].push(tries_per_tasks[index].tried + " submissions");
-                resultsDict[results[j]]["marker"]["size"].push(tries_per_tasks[index].tried);
+                plotData[results[j]]["x"].push(tries_per_tasks[index].taskid);
+                plotData[results[j]]["y"].push(tries_per_tasks[index].grade);
+                plotData[results[j]]["text"].push(tries_per_tasks[index].tried + " submissions");
+                plotData[results[j]]["marker"]["size"].push(tries_per_tasks[index].tried);
             }
         }
     }
 
     var data = [];
     for (var index = 0; index < results.length; index++) {
-        data.push(resultsDict[results[index]]);
+        data.push(plotData[results[index]]);
     }
 
     var layout = {

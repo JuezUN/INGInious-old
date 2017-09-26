@@ -11,7 +11,7 @@ $var title: My Statistics
 <div class="tab-content">
     <div id="trials-circle" class="tab-pane fade in active">
         <h3>Trials and Best Grade</h3>
-        <div id="tries_per_task" style="width: 100%";><!-- Plotly chart will be drawn inside this DIV --></div>
+        <div id="tries_per_task" style="width: 100%"><!-- Plotly chart will be drawn inside this DIV --></div>
         <a href='#' onclick='UserStatistics.csvConverter.downloadCSV();'>Download CSV</a>
     </div>
     <div id="menu1" class="tab-pane fade">
@@ -30,7 +30,7 @@ $var title: My Statistics
         UserStatistics.csvConverter = new AsyncCSVConverter("/api/stats/student/trials_and_best_grade", "$:course_id");
 
         $$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-            if(e.target.id == "trials-circle-tab"){
+            if(e.target.id === "trials-circle-tab"){
                 plotTriesPerTasksAsync("$:course_id");
             }
         });
