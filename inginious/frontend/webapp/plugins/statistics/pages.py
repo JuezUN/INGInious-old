@@ -59,7 +59,7 @@ class UserStatisticsPage(INGIniousAuthPage):
         self.template_helper.add_javascript("https://cdn.plot.ly/plotly-1.30.0.min.js")
         self.template_helper.add_javascript("/static/statistics/js/user_statistics.js")
 
-        tries_per_tasks_json = json.dumps(self.get_best_submission(), cls=DateTimeEncoder)
+        tries_per_tasks_json = json.dumps(self.get_best_submission(course_id), cls=DateTimeEncoder)
 
         return (
             self.template_helper
@@ -67,14 +67,15 @@ class UserStatisticsPage(INGIniousAuthPage):
                 .user_statistics(tries_per_tasks_json)
         )
 
-    def get_best_submission(self):
+    def get_best_submission(self, course_id):
         username = self.user_manager.session_username()
 
         best_submissions = self.database.user_tasks.aggregate([
             {
                 "$match":
                     {
-                        "username": username
+                        "username": username,
+                        "courseid": course_id
                     }
             },
             {
