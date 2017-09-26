@@ -47,10 +47,10 @@ def statistics_course_menu_hook(course, template_helper):
     return """
             <h3>Statistics</h3>
             <a class="list-group-item list-group-item-info"
-                href="/my_statistics">
+                href="{course_id}/statistics">
                 <i class="fa fa-group fa-fw"></i>
                 My Statistics
-            </a>"""
+            </a>""".format(course_id=course.get_id())
 
 
 class UserStatisticsPage(INGIniousAuthPage):
