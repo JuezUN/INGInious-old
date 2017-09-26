@@ -136,15 +136,35 @@ class BestSubmissionsWithTrials(object):
         return json.dumps(self.as_dict(), cls=DateTimeEncoder)
 
 
-class TrialsAndBestGrade(INGIniousAuthPage):
+class UserStatisticsAPI(INGIniousAuthPage):
     def GET_AUTH(self, *args, **kwargs):
-        query_params = web.input()
+        self.ensure_parameters()
+        return self.statistic()
 
+    def ensure_parameters(self):
         username = self.user_manager.session_username()
-        course_id = query_params.course_id
+        course_id = web.input(course_id=None).course_id
 
+        if course_id is None:
+            raise web.badrequest("400 Bad Request: Missing course_id in the query params")
+
+        try:
+            course = self.course_factory.get_course(course_id)
+        except:
+            raise web.notfound("404 Not found: The course does not exist")
+
+        if not self.user_manager.course_is_user_registered(course, username):
+            raise web.forbidden("403 Forbidden: You are not registered in this course")
+
+    def statistic(self):
+        return "[]"
+
+
+class TrialsAndBestGrade(UserStatisticsAPI):
+    def statistic(self):
+        username = self.user_manager.session_username()
+        course_id = web.input().course_id
         best_submissions_stats = BestSubmissionsWithTrials(username, course_id, self.database)
-
         return best_submissions_stats.as_json()
 
 
