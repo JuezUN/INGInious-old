@@ -47,17 +47,17 @@ def statistics_course_menu_hook(course, template_helper):
     return """
             <h3>Statistics</h3>
             <a class="list-group-item list-group-item-info"
-                href="{course_id}/statistics">
+                href="/statistics/{course_id}">
                 <i class="fa fa-group fa-fw"></i>
                 My Statistics
             </a>""".format(course_id=course.get_id())
 
 
 class UserStatisticsPage(INGIniousAuthPage):
-    def GET_AUTH(self, *args, **kwargs):
+    def GET_AUTH(self, course_id):
         self.template_helper.add_javascript("https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.3.6/papaparse.min.js")
         self.template_helper.add_javascript("https://cdn.plot.ly/plotly-1.30.0.min.js")
-        self.template_helper.add_javascript("static/statistics/js/user_statistics.js")
+        self.template_helper.add_javascript("/static/statistics/js/user_statistics.js")
 
         tries_per_tasks_json = json.dumps(self.get_best_submission(), cls=DateTimeEncoder)
 
