@@ -66,19 +66,41 @@ class UserStatisticsPage(INGIniousAuthPage):
         )
 
 
-class BestSubmissionsWithTrials(object):
-    def __init__(self, username, course_id, database):
-        self.username = username
-        self.course_id = course_id
-        self.database = database
+class UserStatisticsAPI(INGIniousAuthPage):
+    def GET_AUTH(self, *args, **kwargs):
+        self.ensure_parameters()
+        return self.statistics()
 
-    def as_dict(self):
+    def ensure_parameters(self):
+        username = self.user_manager.session_username()
+        course_id = web.input(course_id=None).course_id
+
+        if course_id is None:
+            raise web.badrequest("400 Bad Request: Missing course_id in the query params")
+
+        try:
+            course = self.course_factory.get_course(course_id)
+        except:
+            raise web.notfound("404 Not found: The course does not exist")
+
+        if not self.user_manager.course_is_user_registered(course, username):
+            raise web.forbidden("403 Forbidden: You are not registered in this course")
+
+    def statistics(self):
+        return "[]"
+
+
+class TrialsAndBestGrade(UserStatisticsAPI):
+    def statistics(self):
+        username = self.user_manager.session_username()
+        course_id = web.input().course_id
+
         best_submissions = self.database.user_tasks.aggregate([
             {
                 "$match":
                     {
-                        "username": self.username,
-                        "courseid": self.course_id
+                        "username": username,
+                        "courseid": course_id
                     }
             },
             {
@@ -122,42 +144,7 @@ class BestSubmissionsWithTrials(object):
             }
         ])
 
-        return list(best_submissions)
-
-    def as_json(self):
-        return json.dumps(self.as_dict(), cls=DateTimeEncoder)
-
-
-class UserStatisticsAPI(INGIniousAuthPage):
-    def GET_AUTH(self, *args, **kwargs):
-        self.ensure_parameters()
-        return self.statistic()
-
-    def ensure_parameters(self):
-        username = self.user_manager.session_username()
-        course_id = web.input(course_id=None).course_id
-
-        if course_id is None:
-            raise web.badrequest("400 Bad Request: Missing course_id in the query params")
-
-        try:
-            course = self.course_factory.get_course(course_id)
-        except:
-            raise web.notfound("404 Not found: The course does not exist")
-
-        if not self.user_manager.course_is_user_registered(course, username):
-            raise web.forbidden("403 Forbidden: You are not registered in this course")
-
-    def statistic(self):
-        return "[]"
-
-
-class TrialsAndBestGrade(UserStatisticsAPI):
-    def statistic(self):
-        username = self.user_manager.session_username()
-        course_id = web.input().course_id
-        best_submissions_stats = BestSubmissionsWithTrials(username, course_id, self.database)
-        return best_submissions_stats.as_json()
+        return json.dumps(list(best_submissions), cls=DateTimeEncoder)
 
 
 class DateTimeEncoder(json.JSONEncoder):
