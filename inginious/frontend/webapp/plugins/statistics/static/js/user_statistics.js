@@ -1,3 +1,12 @@
+function plotTriesPerTasksAsync(course_id) {
+    $.get("/api/stats/student/trials_and_best_grade", {course_id: course_id}, function (data) {
+        plotTriesPerTasks(JSON.parse(data));
+    }).fail(function (error) {
+        alert(error.responseText);
+    });
+}
+
+
 function plotTriesPerTasks(tries_per_tasks) {
     var SUBMISSIONS_COUNT_TO_PIXELS = getRatio(tries_per_tasks);
 
@@ -71,6 +80,24 @@ function getRatio(tries_per_tasks) {
 
 //Global namespace
 var UserStatistics = {};
+
+var AsyncCSVConverter = (function () {
+    function AsyncCSVConverter(resource, course_id) {
+        this.resource = resource;
+        this.course_id = course_id;
+    }
+
+    AsyncCSVConverter.prototype.downloadCSV = function () {
+        $.get(this.resource, {course_id: this.course_id}, function (data) {
+            var csvConverter = new CSVConverter(data);
+            csvConverter.downloadCSV();
+        }).fail(function (error) {
+            alert(error.responseText);
+        });
+    };
+
+    return AsyncCSVConverter;
+}());
 
 var CSVConverter = (function () {
     function CSVConverter(data) {

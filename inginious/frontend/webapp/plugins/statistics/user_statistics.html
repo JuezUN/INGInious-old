@@ -1,4 +1,4 @@
-$def with(tries_per_tasks_json)
+$def with(course_id)
 
 $var title: My Statistics
 
@@ -6,8 +6,8 @@ $var title: My Statistics
 <a href='#' onclick='UserStatistics.csvConverter.downloadCSV();'>Download CSV</a>
 
 <script>
-    \$(function() {
-        plotTriesPerTasks($:tries_per_tasks_json);
-        UserStatistics.csvConverter = new CSVConverter($:tries_per_tasks_json);
+    $$(function() {
+        plotTriesPerTasksAsync("$:course_id");
+        UserStatistics.csvConverter = new AsyncCSVConverter("/api/stats/student/trials_and_best_grade", "$:course_id");
     });
 </script>
