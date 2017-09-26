@@ -59,7 +59,10 @@ class UserStatisticsPage(INGIniousAuthPage):
         self.template_helper.add_javascript("https://cdn.plot.ly/plotly-1.30.0.min.js")
         self.template_helper.add_javascript("/static/statistics/js/user_statistics.js")
 
-        tries_per_tasks_json = json.dumps(self.get_best_submission(course_id), cls=DateTimeEncoder)
+        username = self.user_manager.session_username()
+
+        best_submissions_stats = BestSubmissionsWithTrials(username, course_id, self.database)
+        tries_per_tasks_json = best_submissions_stats.as_json()
 
         return (
             self.template_helper
@@ -70,12 +73,20 @@ class UserStatisticsPage(INGIniousAuthPage):
     def get_best_submission(self, course_id):
         username = self.user_manager.session_username()
 
+
+class BestSubmissionsWithTrials(object):
+    def __init__(self, username, course_id, database):
+        self.username = username
+        self.course_id = course_id
+        self.database = database
+
+    def as_dict(self):
         best_submissions = self.database.user_tasks.aggregate([
             {
                 "$match":
                     {
-                        "username": username,
-                        "courseid": course_id
+                        "username": self.username,
+                        "courseid": self.course_id
                     }
             },
             {
@@ -120,6 +131,21 @@ class UserStatisticsPage(INGIniousAuthPage):
         ])
 
         return list(best_submissions)
+
+    def as_json(self):
+        return json.dumps(self.as_dict(), cls=DateTimeEncoder)
+
+
+class TrialsAndBestGrade(INGIniousAuthPage):
+    def GET_AUTH(self, *args, **kwargs):
+        query_params = web.input()
+
+        username = self.user_manager.session_username()
+        course_id = query_params.course_id
+
+        best_submissions_stats = BestSubmissionsWithTrials(username, course_id, self.database)
+
+        return best_submissions_stats.as_json()
 
 
 class DateTimeEncoder(json.JSONEncoder):
