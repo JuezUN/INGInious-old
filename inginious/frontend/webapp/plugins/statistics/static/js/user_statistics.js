@@ -64,6 +64,7 @@ function plotTriesPerTasks(tries_per_tasks) {
         margin: {t: 20},
         hovermode: 'closest'
     };
+    Plotly.purge('tries_per_task');
     Plotly.plot('tries_per_task', data, layout, {showLink: false});
 }
 

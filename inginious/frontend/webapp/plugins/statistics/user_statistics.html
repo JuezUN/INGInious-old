@@ -2,12 +2,38 @@ $def with(course_id)
 
 $var title: My Statistics
 
-<div id="tries_per_task"  style="width: 100%";><!-- Plotly chart will be drawn inside this DIV --></div>
-<a href='#' onclick='UserStatistics.csvConverter.downloadCSV();'>Download CSV</a>
+<ul class="nav nav-tabs">
+    <li class="active"><a id="trials-circle-tab" data-toggle="tab" href="#trials-circle">Trials and Best Grade</a></li>
+    <li><a data-toggle="tab" href="#menu1">Menu 1</a></li>
+    <li><a data-toggle="tab" href="#menu2">Menu 2</a></li>
+</ul>
+
+<div class="tab-content">
+    <div id="trials-circle" class="tab-pane fade in active">
+        <h3>Trials and Best Grade</h3>
+        <div id="tries_per_task" style="width: 100%";><!-- Plotly chart will be drawn inside this DIV --></div>
+        <a href='#' onclick='UserStatistics.csvConverter.downloadCSV();'>Download CSV</a>
+    </div>
+    <div id="menu1" class="tab-pane fade">
+        <h3>Menu 1</h3>
+        <p>Some content in menu 1.</p>
+    </div>
+    <div id="menu2" class="tab-pane fade">
+        <h3>Menu 2</h3>
+        <p>Some content in menu 2.</p>
+    </div>
+</div>
+
 
 <script>
-    $$(function() {
-        plotTriesPerTasksAsync("$:course_id");
+    $$(function () {
         UserStatistics.csvConverter = new AsyncCSVConverter("/api/stats/student/trials_and_best_grade", "$:course_id");
+
+        $$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            if(e.target.id == "trials-circle-tab"){
+                plotTriesPerTasksAsync("$:course_id");
+            }
+        });
+        $$('.active > a[data-toggle="tab"]').trigger('shown.bs.tab');
     });
 </script>
