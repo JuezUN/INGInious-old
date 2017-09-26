@@ -27,22 +27,6 @@ class StaticResourcePage(INGIniousPage):
         raise web.notfound()
 
 
-class StatisticsPage(INGIniousAuthPage):
-    def GET_AUTH(self):
-        username = self.user_manager.session_username()
-
-        self.template_helper.add_javascript("https://cdn.plot.ly/plotly-1.30.0.min.js")
-        self.template_helper.add_javascript("static/statistics/js/statistics.js")
-
-        total_users = self.database.users.count()
-        total_submissions = self.database.submissions.count({"grade": {"$gte": 90}})
-
-        return (
-            self.template_helper.get_custom_renderer(_BASE_RENDERER_PATH).main(username, total_users,
-                                                                               total_submissions)
-        )
-
-
 def statistics_course_menu_hook(course, template_helper):
     return """
             <h3>Statistics</h3>
