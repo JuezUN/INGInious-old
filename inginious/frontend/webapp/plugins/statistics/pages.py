@@ -5,6 +5,7 @@ import os
 import json
 from inginious.frontend.webapp.pages.utils import INGIniousAuthPage, INGIniousPage
 from inginious.common.filesystems.local import LocalFSProvider
+from bson.json_util import dumps
 
 _BASE_RENDERER_PATH = 'frontend/webapp/plugins/statistics'
 _BASE_STATIC_FOLDER = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
@@ -45,38 +46,13 @@ class UserStatisticsPage(INGIniousAuthPage):
         self.template_helper.add_javascript("https://cdn.plot.ly/plotly-1.30.0.min.js")
         self.template_helper.add_javascript("static/statistics/js/user_statistics.js")
 
-        grades_per_task_json = self.grade_per_task()
-        attempts_per_task_json = self.attempts_per_task()
+        submissions_per_task_json = self.submissions_per_task()
 
         return(
             self.template_helper
                 .get_custom_renderer(_BASE_RENDERER_PATH)
-                .user_statistics(
-                    grades_per_task_json, attempts_per_task_json
-                )
+                .user_statistics(submissions_per_task_json)
         )
-
-    def grade_per_task(self):
-        user_tasks = self.user_tasks_information()
-
-        data_dict = {
-            "x": user_tasks["submissions_date"],
-            "y": user_tasks["grades"],
-            "text": user_tasks["task_names"]
-        }
-
-        return json.dumps(data_dict)
-
-    def attempts_per_task(self):
-        user_tasks = self.user_tasks_information()
-
-        data_dict = {
-            "x": user_tasks["submissions_date"],
-            "y": user_tasks["times_tried"],
-            "text": user_tasks["task_names"]
-        }
-
-        return json.dumps(data_dict)
 
     def user_tasks_information(self):
         username = self.user_manager.session_username()
@@ -112,3 +88,32 @@ class UserStatisticsPage(INGIniousAuthPage):
         info_dict["times_tried"] = tasks_sorted_by_date[3]
 
         return info_dict
+
+    def submissions_per_task(self):
+
+        username = self.user_manager.session_username()
+        submissions_per_task = self.database.submissions.aggregate([
+            {"$match":
+                {"username": [username],
+                "custom.summary_result": {"$ne": None}
+                }
+            },
+            {
+                "$group": {
+                    "_id": {"summary_result": "$custom.summary_result",
+                            "task_id": "$taskid"},
+                    "count": {"$sum": 1}
+                }
+            },
+            {   "$project": {
+                    "_id": 0,
+                    "task_id": "$_id.task_id",
+                    "summary_result": "$_id.summary_result",
+                    "count": 1 }
+            },
+            {
+                "$sort" : { "task_id" : -1}
+            }
+        ])
+
+        return dumps(submissions_per_task)
