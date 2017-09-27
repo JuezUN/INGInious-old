@@ -41,6 +41,7 @@ $var title: My Statistics
             if(e.target.id === "trials-circle-tab"){
                 plotTriesPerTasksAsync("$:course_id");
             }else if(e.target.id === "bar-submissions-per-tasks-tab"){
+                toggle_normalize_submissions_per_tasks = true;
                 plotUserSubmissionsPerTasksFullAsync("submissions_per_task","$:course_id");
             }
         });
