@@ -4,7 +4,7 @@ $var title: My Statistics
 
 <ul class="nav nav-tabs">
     <li class="active"><a id="trials-circle-tab" data-toggle="tab" href="#trials-circle">Trials and Best Grade</a></li>
-    <li><a data-toggle="tab" href="#menu1">Menu 1</a></li>
+    <li><a id="bar-submissions-per-tasks-tab" data-toggle="tab" href="#bar-submissions-per-tasks">Bar Submissions Per Tasks</a></li>
     <li><a data-toggle="tab" href="#menu2">Menu 2</a></li>
 </ul>
 
@@ -14,9 +14,15 @@ $var title: My Statistics
         <div id="tries_per_task" style="width: 100%"><!-- Plotly chart will be drawn inside this DIV --></div>
         <a href='#' onclick='UserStatistics.csvConverter.downloadCSV();'>Download CSV</a>
     </div>
-    <div id="menu1" class="tab-pane fade">
-        <h3>Menu 1</h3>
-        <p>Some content in menu 1.</p>
+    <div id="bar-submissions-per-tasks" class="tab-pane fade">
+        <h3>Bar Submissions Per Tasks</h3>
+        <div id="submissions_per_task" style="height: 500px;"><!-- Plotly chart will be drawn inside this DIV --></div>
+        <div class="normalize" id="normalize_submissions_per_task" style="display: flex;justify-content: center;">
+          <button style="background-color: white;padding: 8px 15px;text-align: center;font-size: 12px;"
+                  onclick="plotUserSubmissionsPerTasksFullAsync('submissions_per_task','$course_id')">
+                  Toggle normalize
+          </button>
+        </div>
     </div>
     <div id="menu2" class="tab-pane fade">
         <h3>Menu 2</h3>
@@ -32,6 +38,8 @@ $var title: My Statistics
         $$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
             if(e.target.id === "trials-circle-tab"){
                 plotTriesPerTasksAsync("$:course_id");
+            }else if(e.target.id === "bar-submissions-per-tasks-tab"){
+                plotUserSubmissionsPerTasksFullAsync("submissions_per_task","$:course_id");
             }
         });
         $$('.active > a[data-toggle="tab"]').trigger('shown.bs.tab');
