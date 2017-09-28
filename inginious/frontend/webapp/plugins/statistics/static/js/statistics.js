@@ -25,14 +25,13 @@ var Statistic = (function() {
 
 	}
 
-	var cachedPromise = null;
-	Statistic.prototype._fetchAndCacheData = function() {
-		if (cachedPromise == null) {
-			cachedPromise = this._fetchData();
-		}
+    Statistic.prototype._fetchAndCacheData = function() {
+        if (this._cachedPromise == null) {
+            this._cachedPromise = this._fetchData();
+        }
 
-		return cachedPromise;
-	};
+        return this._cachedPromise;
+    };
 
 	Statistic.prototype.plotAsync = function() {
         var statistic = this;
