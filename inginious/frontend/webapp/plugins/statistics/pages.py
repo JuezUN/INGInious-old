@@ -5,11 +5,11 @@ import os
 from inginious.frontend.webapp.pages.utils import INGIniousAuthPage, INGIniousPage
 from inginious.frontend.webapp.pages.course_admin.utils import INGIniousAdminPage
 from inginious.common.filesystems.local import LocalFSProvider
-from bson.json_util import dumps
-import json
+from json import dumps
 
 _BASE_RENDERER_PATH = 'frontend/webapp/plugins/statistics'
 _BASE_STATIC_FOLDER = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
+
 
 class StaticResourcePage(INGIniousPage):
     def GET(self, path):
@@ -26,7 +26,7 @@ class StaticResourcePage(INGIniousPage):
 
         raise web.notfound()
 
-class StatisticsPage(INGIniousAuthPage):
+class AdminStatisticsPage(INGIniousAuthPage):
     def GET_AUTH(self):
         username = self.user_manager.session_username()
 
@@ -40,6 +40,8 @@ class StatisticsPage(INGIniousAuthPage):
             self.template_helper.get_custom_renderer(_BASE_RENDERER_PATH).main(username, total_users,
                 total_submissions)
         )
+
+
 
 def statistics_course_admin_menu_hook(course):
     course_statistics_link = ""
@@ -123,7 +125,7 @@ class CourseStatisticsPage(INGIniousAdminPage):
                 })
         return statistics_by_verdict
 
-    def get_statistics_by_veredict(self, course):
+    def get_statistics_by_verdict(self, course):
         course_id = course.get_id()
         statistics_by_verdict = self.database.submissions.aggregate([
             {"$match": {"courseid": course_id, "custom.summary_result": {"$ne": None}}},
@@ -176,7 +178,7 @@ class CourseStatisticsPage(INGIniousAdminPage):
     def GET_AUTH(self, course_id):
         course, _ = self.get_course_and_check_rights(course_id)
 
-        statistics_by_verdict = self.get_statistics_by_veredict(course)
+        statistics_by_verdict = self.get_statistics_by_verdict(course)
         best_statistics_by_verdict = self.get_best_statistics_by_verdict(course)
 
         statistics = {
