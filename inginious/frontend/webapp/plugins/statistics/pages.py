@@ -138,33 +138,42 @@ class DateTimeEncoder(json.JSONEncoder):
         if isinstance(o, datetime):
             return o.isoformat()
 
+
 class BarSubmissionsPerTasks(UserStatisticsAPI):
     def statistics(self):
         username = self.user_manager.session_username()
         course_id = web.input().course_id
 
         submissions_per_task = self.database.submissions.aggregate([
-            {"$match":
-                {"username": [username],
-                "courseid": course_id,
-                "custom.summary_result": {"$ne": None}
-                }
+            {
+                "$match":
+                    {
+                        "username": [username],
+                        "courseid": course_id,
+                        "custom.summary_result": {"$ne": None}
+                    }
             },
             {
                 "$group": {
-                    "_id": {"summary_result": "$custom.summary_result",
-                            "task_id": "$taskid"},
+                    "_id":
+                        {
+                            "summary_result": "$custom.summary_result",
+                            "task_id": "$taskid"
+                        },
                     "count": {"$sum": 1}
                 }
             },
-            {   "$project": {
-                    "_id": 0,
-                    "task_id": "$_id.task_id",
-                    "summary_result": "$_id.summary_result",
-                    "count": 1 }
+            {
+                "$project":
+                    {
+                        "_id": 0,
+                        "task_id": "$_id.task_id",
+                        "summary_result": "$_id.summary_result",
+                        "count": 1
+                    }
             },
             {
-                "$sort" : { "task_id" : -1}
+                "$sort": {"task_id": -1}
             }
         ])
 
