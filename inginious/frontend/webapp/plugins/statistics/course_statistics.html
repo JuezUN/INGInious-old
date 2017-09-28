@@ -28,6 +28,12 @@ $var Navbar: $:NavbarF()
           Toggle normalize
         </button>
     </div>
+
+    <h4>Submissions by grade</h4>
+    <div id="statisticsGradeDiv" class="statistics-grade"></div>
+
+    <h4>Final grade distribution</h4>
+    <div id="statisticsGradeDistributionDiv" class="statistics-grade"></div>
 </div>
 
 
@@ -36,12 +42,15 @@ $var Navbar: $:NavbarF()
   var statistics = $:(statisticsJson);
 
   $$(function() {
+
     plotVerdictStatistics("statisticsVerdict", statistics);
 
   });
 
   $$(function() {
     plotBestVerdictStatistics("bestStatisticsVerdict", statistics);
+    plotGradeStatistics("statisticsGradeDiv", statistics.by_grade_count);
+    plotGradeDistributionStatistics("statisticsGradeDistributionDiv", statistics.by_grade_distribution);
 
   });
 </script>
