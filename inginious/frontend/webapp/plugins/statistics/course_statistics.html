@@ -1,4 +1,4 @@
-$def with (course, statisticsJson)
+$def with (course)
 
 $var title: $:course.get_name() - Statistics
 
@@ -11,46 +11,56 @@ $def NavbarF():
 $var Navbar: $:NavbarF()
 
 <h3>Statistics for course: $:course.get_name()</h3>
-<div class="list-group">
-    <h4>Submissions by Verdict</h4>
-    <div id="statisticsVerdict" class="statistics-verdict" style="height: 500px;"><!-- Plotly chart will be drawn inside this DIV --></div>
-    <div class="normalize" id="normalize_statistics_verdict" style="display: flex;justify-content: center;">
-      <button style="background-color: white;padding: 8px 15px;text-align: center;font-size: 12px;"
-      onclick="plotVerdictStatistics('statisticsVerdict',$statisticsJson)">
-          Toggle normalize
-        </button>
-    </div>
-    <h4>Best Submissions by Verdict</h4>
-    <div id="bestStatisticsVerdict" class="best-statistics-verdict" style="height: 500px;"><!-- Plotly chart will be drawn inside this DIV --></div>
-    <div class="normalize" id="normalize_best_statistics_verdict" style="display: flex;justify-content: center;">
-      <button style="background-color: white;padding: 8px 15px;text-align: center;font-size: 12px;"
-      onclick="plotBestVerdictStatistics('bestStatisticsVerdict',$statisticsJson)">
-          Toggle normalize
-        </button>
+
+<div>
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active">
+            <a href="#gradeCount" aria-controls="gradeCount" role="tab" data-toggle="tab">Grade count</a>
+        </li>
+        <li role="presentation">
+            <a href="#gradeDistribution" aria-controls="gradeDistribution" role="tab" data-toggle="tab">Grade distribution</a>
+        </li>
+        <li role="presentation">
+            <a href="#submissionsVerdict" aria-controls="submissionsVerdict" role="tab" data-toggle="tab">Submissions Verdict (ALL)</a>
+        </li>
+        <li role="presentation">
+            <a href="#bestSubmissionsVerdict" aria-controls="bestSubmissionsVerdict" role="tab" data-toggle="tab">Submissions Verdict (BEST)</a>
+        </li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="gradeCount">
+            <h4>Submissions by grade</h4>
+            <div id="statisticsGradeDiv" class="statistics-grade"></div>
+        </div>
+        <div role="tabpanel" class="tab-pane" id="gradeDistribution">
+            <h4>Final grade distribution</h4>
+            <div id="statisticsGradeDistributionDiv" class="statistics-grade"></div>
+        </div>
+        <div role="tabpanel" class="tab-pane" id="submissionsVerdict">
+            <h4>Submissions Verdict (ALL)</h4>
+            <div id="submissionsVerdictDiv" class="statistics-grade"></div>
+            <button style="background-color: white;padding: 8px 15px;text-align: center;font-size: 12px;"
+                    onclick="tabToStatistic.submissionsVerdict.toggle()">
+                    Toggle normalize
+            </button>
+        </div>
+        <div role="tabpanel" class="tab-pane" id="bestSubmissionsVerdict">
+            <h4>Submissions Verdict (BEST)</h4>
+            <div id="bestSubmissionsVerdictDiv" class="statistics-grade"></div>
+            <button style="background-color: white;padding: 8px 15px;text-align: center;font-size: 12px;"
+                    onclick="tabToStatistic.bestSubmissionsVerdict.toggle()">
+                    Toggle normalize
+            </button>
+        </div>
     </div>
 
-    <h4>Submissions by grade</h4>
-    <div id="statisticsGradeDiv" class="statistics-grade"></div>
-
-    <h4>Final grade distribution</h4>
-    <div id="statisticsGradeDistributionDiv" class="statistics-grade"></div>
 </div>
 
 
 
 <script type="text/javascript">
-  var statistics = $:(statisticsJson);
-
-  $$(function() {
-
-    plotVerdictStatistics("statisticsVerdict", statistics);
-
-  });
-
-  $$(function() {
-    plotBestVerdictStatistics("bestStatisticsVerdict", statistics);
-    plotGradeStatistics("statisticsGradeDiv", statistics.by_grade_count);
-    plotGradeDistributionStatistics("statisticsGradeDistributionDiv", statistics.by_grade_distribution);
-
-  });
+    var courseId = "$:course.get_id()";
 </script>
