@@ -52,7 +52,7 @@ function plotGradeDistributionStatistics(containerId, data) {
           outlierwidth: 2
         }
       },
-      boxpoints: 'suspectedoutliers'
+      boxpoints: 'all'
     };
   });
 
