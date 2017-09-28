@@ -18,11 +18,11 @@ $var title: My Statistics
         <div id="submissions_per_task" style="height: 500px;"><!-- Plotly chart will be drawn inside this DIV --></div>
         <div class="normalize" id="normalize_submissions_per_task" style="display: flex;justify-content: center;">
           <button style="background-color: white;padding: 8px 15px;text-align: center;font-size: 12px;"
-                  onclick="plotUserSubmissionsPerTasksFullAsync('submissions_per_task','$course_id')">
+                  onclick="UserStatistics.barSubmissionsPerTasks.toggle_normalize()">
                   Toggle normalize
           </button>
         </div>
-        <a href='#' onclick='UserStatistics.csvBarSubmissionsPerTasksConverter.downloadCSV();'>Download CSV</a>
+        <a href='#' onclick='UserStatistics.barSubmissionsPerTasks.downloadCsvAsync();'>Download CSV</a>
     </div>
 </div>
 
@@ -30,14 +30,13 @@ $var title: My Statistics
 <script>
     $$(function () {
         UserStatistics.trialsAndBestGradeStatistic = new UserTrialsAndBestGradeStatistic("$:course_id");
-        UserStatistics.csvBarSubmissionsPerTasksConverter = new AsyncCSVConverter("/api/stats/student/bar_submissions_per_tasks", "$:course_id");
+        UserStatistics.barSubmissionsPerTasks = new BarSubmissionsPerTasks("$:course_id");
 
         $$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
             if(e.target.id === "trials-circle-tab"){
                 UserStatistics.trialsAndBestGradeStatistic.plotAsync();
             }else if(e.target.id === "bar-submissions-per-tasks-tab"){
-                toggle_normalize_submissions_per_tasks = true;
-                plotUserSubmissionsPerTasksFullAsync("submissions_per_task","$:course_id");
+                UserStatistics.barSubmissionsPerTasks.plotAsync();
             }
         });
         $$('.active > a[data-toggle="tab"]').trigger('shown.bs.tab');

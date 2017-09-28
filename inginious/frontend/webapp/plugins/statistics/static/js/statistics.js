@@ -167,3 +167,97 @@ var UserTrialsAndBestGradeStatistic = (function () {
 
     return UserTrialsAndBestGradeStatistic;
 })();
+
+var BarSubmissionsPerTasks = (function () {
+    function BarSubmissionsPerTasks(course_id, id_div) {
+        this.course_id = course_id;
+        this.id_div = id_div || "submissions_per_task";
+        this.RESOURCE_URL = "/api/stats/student/bar_submissions_per_tasks";
+        this.normalize = false;
+    }
+
+    BarSubmissionsPerTasks.prototype = Object.create(Statistic.prototype);
+
+    BarSubmissionsPerTasks.prototype._fetchData = function () {
+        return $.getJSON(this.RESOURCE_URL, {course_id: this.course_id});
+    };
+
+    BarSubmissionsPerTasks.prototype.toggle_normalize = function () {
+        this.normalize = !this.normalize;
+        this.plotAsync();
+    };
+
+    BarSubmissionsPerTasks.prototype._plotData = function (data) {
+        var data_count_obj = {};
+        var tasks_id = [];
+
+        for (var i = 0; i < data.length; ++i) {
+            if (data_count_obj[data[i].task_id] != null) {
+                data_count_obj[data[i].task_id] += data[i].count;
+            } else {
+                data_count_obj[data[i].task_id] = data[i].count;
+                tasks_id.push(data[i].task_id)
+            }
+        }
+
+        var compilation_error_data = this.createObjectToPlotData(data, data_count_obj, "COMPILATION_ERROR", 'rgb(236,199,6)');
+        var time_limit_data = this.createObjectToPlotData(data, data_count_obj, "TIME_LIMIT_EXCEEDED", 'rgb(50,120,202)');
+        var memory_limit_data = this.createObjectToPlotData(data, data_count_obj, "MEMORY_LIMIT_EXCEEDED", 'rgb(119,92,133)');
+        var runtime_error_data = this.createObjectToPlotData(data, data_count_obj, "RUNTIME_ERROR", 'rgb(2,164,174)');
+        var wrong_answer_data = this.createObjectToPlotData(data, data_count_obj, "WRONG_ANSWER", 'rgb(227,79,54)');
+        var internal_error_data = this.createObjectToPlotData(data, data_count_obj, "INTERNAL_ERROR", 'rgb(137,139,37)');
+        var accepted_data = this.createObjectToPlotData(data, data_count_obj, "ACCEPTED", 'rgb(35,181,100)');
+
+        var plotData = [compilation_error_data, time_limit_data, memory_limit_data, runtime_error_data, wrong_answer_data, internal_error_data, accepted_data];
+
+        var layout = {
+            barmode: 'stack',
+            title: 'Submissions vs Task',
+            xaxis: {
+                title: 'Tasks',
+                categoryorder: "array",
+                categoryarray: tasks_id,
+                titlefont: {
+                    size: 16,
+                    color: 'rgb(107, 107, 107)'
+                }
+            },
+            yaxis: {
+                title: this.normalize ? 'Percentage of submissions' : 'Number of submissions',
+                titlefont: {
+                    size: 16,
+                    color: 'rgb(107, 107, 107)'
+                }
+            }
+        };
+
+        Plotly.purge(this.id_div);
+        Plotly.newPlot(this.id_div, plotData, layout);
+    };
+
+
+    BarSubmissionsPerTasks.prototype.createObjectToPlotData = function (data, data_count_obj, verdict, color_category) {
+        var plotData = {
+            x: [],
+            y: [],
+            marker: {color: color_category},
+            name: verdict,
+            type: 'bar'
+        };
+
+        for (var i = 0; i < data.length; ++i) {
+            if (data[i].summary_result === verdict) {
+                plotData.x.push(data[i].task_id);
+                if (!this.normalize) {
+                    plotData.y.push(data[i].count);
+                } else {
+                    plotData.y.push((data[i].count / data_count_obj[data[i].task_id]) * 100);
+                }
+            }
+        }
+
+        return plotData;
+    };
+
+    return BarSubmissionsPerTasks;
+})();
