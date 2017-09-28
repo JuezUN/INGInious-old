@@ -42,7 +42,6 @@ class UserStatisticsPage(INGIniousAuthPage):
     def GET_AUTH(self, course_id):
         self.template_helper.add_javascript("https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.3.6/papaparse.min.js")
         self.template_helper.add_javascript("https://cdn.plot.ly/plotly-1.30.0.min.js")
-        self.template_helper.add_javascript("/static/statistics/js/user_statistics.js")
         self.template_helper.add_javascript("/static/statistics/js/statistics.js")
 
         return (
