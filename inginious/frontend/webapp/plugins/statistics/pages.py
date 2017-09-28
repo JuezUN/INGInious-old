@@ -2,9 +2,11 @@ import web
 import posixpath
 import urllib
 import os
+import inginious.frontend.webapp.pages.api._api_page as api
 from inginious.frontend.webapp.pages.utils import INGIniousAuthPage, INGIniousPage
 from inginious.frontend.webapp.pages.course_admin.utils import INGIniousAdminPage
 from inginious.common.filesystems.local import LocalFSProvider
+from inginious.common.course_factory import CourseNotFoundException, CourseUnreadableException, InvalidNameException
 import json
 
 _BASE_RENDERER_PATH = 'frontend/webapp/plugins/statistics'
@@ -29,8 +31,19 @@ def statistics_course_admin_menu_hook(course):
     course_statistics_link = ""
     return ("statistics", '<i class="fa fa-bar-chart" aria-hidden="true"></i> Course statistics')
 
-class CourseStatisticsPage(INGIniousAdminPage):
+class StatisticsAdminApi(api.APIAuthenticatedPage):
+    def get_course_and_check_rights(self, course_id):
+        try:
+            course = self.course_factory.get_course(course_id)
+        except (CourseNotFoundException, InvalidNameException, CourseUnreadableException):
+            raise api.APIError(400, {"error": "Invalid course"})
 
+        if not self.user_manager.has_staff_rights_on_course(course):
+            raise api.APIError(400, {"error": "Invalid course"})
+
+        return course
+
+class GradeCountStatisticsApi(StatisticsAdminApi):
     def _compute_grade_count_statistics(self, course_id):
         statistics_by_grade = self.database.user_tasks.aggregate([
             {"$match": {"courseid": course_id}},
@@ -56,6 +69,32 @@ class CourseStatisticsPage(INGIniousAdminPage):
 
         return task_id_to_statistics
 
+    def API_GET(self):
+        parameters = web.input()
+
+        # Validate course_id
+        if 'course_id' not in parameters:
+            raise api.APIError(400, {"error": "course_id is mandatory"})
+
+        course_id = parameters["course_id"]
+        course = self.get_course_and_check_rights(course_id)
+
+        course_tasks = course.get_tasks()
+        sorted_tasks = sorted(course_tasks.values(), key=lambda task: task.get_order())
+
+        grade_count_statistics = self._compute_grade_count_statistics(course_id)
+
+        statistics_by_grade_count = [
+            {
+                "task_id": task.get_id(),
+                "task_name": task.get_name(),
+                "grades": grade_count_statistics.get(task.get_id(), [])
+            } for task in sorted_tasks
+        ]
+
+        return 200, statistics_by_grade_count
+
+class GradeDistributionStatisticsApi(StatisticsAdminApi):
     def _compute_grade_distribution_statistics(self, course_id):
         all_grades = self.database.user_tasks.find(
             {"courseid": course_id},
@@ -73,21 +112,18 @@ class CourseStatisticsPage(INGIniousAdminPage):
 
         return grouped_grades
 
-    def GET_AUTH(self, course_id):
-        course, _ = self.get_course_and_check_rights(course_id)
+    def API_GET(self):
+        parameters = web.input()
+
+        # Validate course_id
+        if 'course_id' not in parameters:
+            raise api.APIError(400, {"error": "course_id is mandatory"})
+
+        course_id = parameters["course_id"]
+        course = self.get_course_and_check_rights(course_id)
 
         course_tasks = course.get_tasks()
         sorted_tasks = sorted(course_tasks.values(), key=lambda task: task.get_order())
-
-        grade_count_statistics = self._compute_grade_count_statistics(course_id)
-
-        statistics_by_grade_count = [
-            {
-                "task_id": task.get_id(),
-                "task_name": task.get_name(),
-                "grades": grade_count_statistics.get(task.get_id(), [])
-            } for task in sorted_tasks
-        ]
 
         grade_distribution_statistics = self._compute_grade_distribution_statistics(course_id)
 
@@ -99,19 +135,20 @@ class CourseStatisticsPage(INGIniousAdminPage):
             } for task in sorted_tasks
         ]
 
-        statistics = {
-            "by_grade_count": statistics_by_grade_count,
-            "by_grade_distribution": statistics_by_grade_distribution,
-        }
+        return 200, statistics_by_grade_distribution
 
-        statisticsJson = json.dumps(statistics)
+
+class CourseStatisticsPage(INGIniousAdminPage):
+    def GET_AUTH(self, course_id):
+        course, _ = self.get_course_and_check_rights(course_id)
 
         self.template_helper.add_javascript("https://cdn.plot.ly/plotly-1.30.0.min.js")
         self.template_helper.add_javascript("https://cdn.jsdelivr.net/npm/lodash@4.17.4/lodash.min.js")
         self.template_helper.add_javascript("/static/statistics/js/statistics.js")
+        self.template_helper.add_javascript("/static/statistics/js/course_admin_statistics.js")
         self.template_helper.add_css("/static/statistics/css/statistics.css")
 
         return (
             self.template_helper.get_custom_renderer(_BASE_RENDERER_PATH).course_statistics(
-                course, statisticsJson)
+                course)
         )
