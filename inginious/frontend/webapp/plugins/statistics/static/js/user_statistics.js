@@ -79,9 +79,6 @@ function getRatio(tries_per_tasks) {
     return avg / 1000;
 }
 
-//Global namespace
-var UserStatistics = {};
-
 var AsyncCSVConverter = (function () {
     function AsyncCSVConverter(resource, course_id) {
         this.resource = resource;

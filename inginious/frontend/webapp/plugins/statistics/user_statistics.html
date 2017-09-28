@@ -5,14 +5,13 @@ $var title: My Statistics
 <ul class="nav nav-tabs">
     <li class="active"><a id="trials-circle-tab" data-toggle="tab" href="#trials-circle">Trials and Best Grade</a></li>
     <li><a id="bar-submissions-per-tasks-tab" data-toggle="tab" href="#bar-submissions-per-tasks">Bar Submissions Per Tasks</a></li>
-    <li><a data-toggle="tab" href="#menu2">Menu 2</a></li>
 </ul>
 
 <div class="tab-content">
     <div id="trials-circle" class="tab-pane fade in active">
         <h3>Trials and Best Grade</h3>
         <div id="tries_per_task" style="width: 100%"><!-- Plotly chart will be drawn inside this DIV --></div>
-        <a href='#' onclick='UserStatistics.csvConverter.downloadCSV();'>Download CSV</a>
+        <a href='#' onclick='UserStatistics.trialsAndBestGradeStatistic.downloadCsvAsync();'>Download CSV</a>
     </div>
     <div id="bar-submissions-per-tasks" class="tab-pane fade">
         <h3>Bar Submissions Per Tasks</h3>
@@ -25,21 +24,17 @@ $var title: My Statistics
         </div>
         <a href='#' onclick='UserStatistics.csvBarSubmissionsPerTasksConverter.downloadCSV();'>Download CSV</a>
     </div>
-    <div id="menu2" class="tab-pane fade">
-        <h3>Menu 2</h3>
-        <p>Some content in menu 2.</p>
-    </div>
 </div>
 
 
 <script>
     $$(function () {
-        UserStatistics.csvConverter = new AsyncCSVConverter("/api/stats/student/trials_and_best_grade", "$:course_id");
+        UserStatistics.trialsAndBestGradeStatistic = new UserTrialsAndBestGradeStatistic("$:course_id");
         UserStatistics.csvBarSubmissionsPerTasksConverter = new AsyncCSVConverter("/api/stats/student/bar_submissions_per_tasks", "$:course_id");
 
         $$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
             if(e.target.id === "trials-circle-tab"){
-                plotTriesPerTasksAsync("$:course_id");
+                UserStatistics.trialsAndBestGradeStatistic.plotAsync();
             }else if(e.target.id === "bar-submissions-per-tasks-tab"){
                 toggle_normalize_submissions_per_tasks = true;
                 plotUserSubmissionsPerTasksFullAsync("submissions_per_task","$:course_id");
