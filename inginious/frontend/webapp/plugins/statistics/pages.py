@@ -168,4 +168,32 @@ class BarSubmissionsPerTasks(UserStatisticsAPI):
             }
         ])
 
+        course = self.course_factory.get_course(course_id)
+        course_tasks = course.get_tasks()
+        sorted_tasks = sorted(course_tasks.values(), key=lambda task: task.get_order())
+
+        task_id_to_statistics = {}
+        for element in submissions_per_task:
+            task_id = element["task_id"]
+
+            if task_id not in task_id_to_statistics:
+                task_id_to_statistics[task_id] = []
+
+            task_id_to_statistics[task_id].append({
+                "count": element["count"],
+                "summary_result": element["summary_result"]
+            })
+
+        submissions_per_task = []
+
+        for task in sorted_tasks:
+            _id = task.get_id()
+            verdicts = task_id_to_statistics.get(_id, [])
+            for verdict in verdicts:
+                submissions_per_task.append({
+                    "task_id": _id,
+                    "summary_result": verdict["summary_result"],
+                    "count": verdict["count"]
+                })
+
         return dumps(submissions_per_task)
