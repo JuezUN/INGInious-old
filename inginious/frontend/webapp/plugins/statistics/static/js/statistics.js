@@ -20,12 +20,12 @@ var CsvConverter = (function () {
     return CsvConverter;
 }());
 
-var Statistic = (function() {
+var Statistic = (function () {
     function Statistic() {
         this._cachedPromise = null;
     }
 
-    Statistic.prototype._fetchAndCacheData = function() {
+    Statistic.prototype._fetchAndCacheData = function () {
         if (this._cachedPromise == null) {
             this._cachedPromise = this._fetchData();
         }
@@ -33,29 +33,29 @@ var Statistic = (function() {
         return this._cachedPromise;
     };
 
-    Statistic.prototype.plotAsync = function() {
+    Statistic.prototype.plotAsync = function () {
         var statistic = this;
-        this._fetchAndCacheData().then(function(data) {
+        this._fetchAndCacheData().then(function (data) {
             statistic._plotData(data);
         });
     };
 
-    Statistic.prototype._fetchCsvData = function() {
+    Statistic.prototype._fetchCsvData = function () {
         return this._fetchAndCacheData();
     };
 
-    Statistic.prototype.downloadCsvAsync = function() {
-        this._fetchCsvData().then(function(data) {
+    Statistic.prototype.downloadCsvAsync = function () {
+        this._fetchCsvData().then(function (data) {
             var csvConverter = new CsvConverter(data);
             csvConverter.downloadCsv();
         });
     };
 
-    Statistic.prototype._plotData = function(data) {
+    Statistic.prototype._plotData = function (data) {
         throw 'Not implemented';
     };
 
-    Statistic.prototype._fetchData = function() {
+    Statistic.prototype._fetchData = function () {
         throw 'Not implemented';
     };
 
