@@ -34,7 +34,7 @@ var GradeDistributionStatistic = (function() {
     };
 
     GradeDistributionStatistic.prototype._fetchData = function() {
-        return $.get('/api/stats/admin/grade_distribution', {course_id: courseId}, null, "json");
+        return $.get('/api/stats/admin/grade_distribution', {course_id: adminStatistics.courseId}, null, "json");
     };
 
     return GradeDistributionStatistic;
@@ -89,7 +89,7 @@ var GradeCountStatistic = (function() {
     };
 
     GradeCountStatistic.prototype._fetchData = function() {
-        return $.get('/api/stats/admin/grade_count', {course_id: courseId}, null, "json");
+        return $.get('/api/stats/admin/grade_count', {course_id: adminStatistics.courseId}, null, "json");
     };
 
     return GradeCountStatistic;

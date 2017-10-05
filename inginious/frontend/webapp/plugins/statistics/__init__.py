@@ -1,7 +1,8 @@
 from . import pages
 
-def init(plugin_manager, course_factory, client, config):
-    plugin_manager.add_page(r'/admin/([a-z0-9A-Z\-_]+)/statistics', pages.CourseStatisticsPage)
+
+def init(plugin_manager, _course_factory, _client, _config):
+    plugin_manager.add_page(r'/admin/([a-z0-9A-Z\-_]+)/statistics', pages.CourseAdminStatisticsPage)
     plugin_manager.add_page(r'/static/statistics/(.*)', pages.StaticResourcePage)
     plugin_manager.add_page('/api/stats/admin/grade_count', pages.GradeCountStatisticsApi)
     plugin_manager.add_page('/api/stats/admin/grade_distribution', pages.GradeDistributionStatisticsApi)

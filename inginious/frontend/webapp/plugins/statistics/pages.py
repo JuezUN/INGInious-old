@@ -3,14 +3,14 @@ import posixpath
 import urllib
 import os
 import inginious.frontend.webapp.pages.api._api_page as api
-from inginious.frontend.webapp.pages.utils import INGIniousAuthPage, INGIniousPage
+from inginious.frontend.webapp.pages.utils import INGIniousPage
 from inginious.frontend.webapp.pages.course_admin.utils import INGIniousAdminPage
 from inginious.common.filesystems.local import LocalFSProvider
 from inginious.common.course_factory import CourseNotFoundException, CourseUnreadableException, InvalidNameException
-import json
 
 _BASE_RENDERER_PATH = 'frontend/webapp/plugins/statistics'
 _BASE_STATIC_FOLDER = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
+
 
 class StaticResourcePage(INGIniousPage):
     def GET(self, path):
@@ -27,9 +27,10 @@ class StaticResourcePage(INGIniousPage):
 
         raise web.notfound()
 
+
 def statistics_course_admin_menu_hook(course):
-    course_statistics_link = ""
-    return ("statistics", '<i class="fa fa-bar-chart" aria-hidden="true"></i> Course statistics')
+    return "statistics", '<i class="fa fa-bar-chart" aria-hidden="true"></i> Course statistics'
+
 
 class StatisticsAdminApi(api.APIAuthenticatedPage):
     def get_course_and_check_rights(self, course_id):
@@ -42,6 +43,7 @@ class StatisticsAdminApi(api.APIAuthenticatedPage):
             raise api.APIError(400, {"error": "Invalid course"})
 
         return course
+
 
 class GradeCountStatisticsApi(StatisticsAdminApi):
     def _compute_grade_count_statistics(self, course_id):
@@ -94,6 +96,7 @@ class GradeCountStatisticsApi(StatisticsAdminApi):
 
         return 200, statistics_by_grade_count
 
+
 class GradeDistributionStatisticsApi(StatisticsAdminApi):
     def _compute_grade_distribution_statistics(self, course_id):
         all_grades = self.database.user_tasks.find(
@@ -138,7 +141,7 @@ class GradeDistributionStatisticsApi(StatisticsAdminApi):
         return 200, statistics_by_grade_distribution
 
 
-class CourseStatisticsPage(INGIniousAdminPage):
+class CourseAdminStatisticsPage(INGIniousAdminPage):
     def GET_AUTH(self, course_id):
         course, _ = self.get_course_and_check_rights(course_id)
 
@@ -149,6 +152,6 @@ class CourseStatisticsPage(INGIniousAdminPage):
         self.template_helper.add_css("/static/statistics/css/statistics.css")
 
         return (
-            self.template_helper.get_custom_renderer(_BASE_RENDERER_PATH).course_statistics(
+            self.template_helper.get_custom_renderer(_BASE_RENDERER_PATH).course_admin_statistics(
                 course)
         )
