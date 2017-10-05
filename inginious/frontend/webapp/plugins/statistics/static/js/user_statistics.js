@@ -101,7 +101,7 @@ var BarSubmissionsPerTasks = (function () {
         return $.getJSON(this.RESOURCE_URL, {course_id: this.course_id});
     };
 
-    BarSubmissionsPerTasks.prototype.toggle_normalize = function () {
+    BarSubmissionsPerTasks.prototype.toggleNormalize = function () {
         this.normalize = !this.normalize;
         this.plotAsync();
     };
