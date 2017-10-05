@@ -1,12 +1,11 @@
-    var color_yellow = 'rgb(236,199,6)';
-    var color_blue = 'rgb(50,120,202)';
-    var color_purple = 'rgb(119,92,133)';
-    var color_cyan = 'rgb(2,164,174)';
-    var color_red = 'rgb(227,79,54)';
-    var color_brown = 'rgb(137,139,37)';
-    var color_aquamarine = 'rgb(35,181,100)';
-    var color_gray = 'rgb(107, 107, 107)';
-    var toggle_normalize_best_submissions_per_tasks = false;
+    var COLOR_COMPILATION_ERROR = 'rgb(236,199,6)';
+    var COLOR_TIME_LIMIT_EXCEEDED = 'rgb(50,120,202)';
+    var COLOR_MEMORY_LIMIT_EXCEEDED = 'rgb(119,92,133)';
+    var COLOR_RUNTIME_ERROR = 'rgb(2,164,174)';
+    var COLOR_WRONG_ANSWER = 'rgb(227,79,54)';
+    var COLOR_INTERNAL_ERROR = 'rgb(137,139,37)';
+    var COLOR_ACCEPTED = 'rgb(35,181,100)';
+    var COLOR_LABEL = 'rgb(107, 107, 107)';
     function getDataNormalized(data_entry, data_count_obj){
         return data_entry.count/data_count_obj[data_entry.task_id]*100;
     }
@@ -50,33 +49,27 @@
         data_count_obj[data[i].task_id] += data[i].count;
       }
 
-      var get_function = null;
-
-      if(normalized){
-        get_function = getDataNormalized;
-      }
-      else{
-        get_function = getData;
-      }
+      var get_function = normalized ? getDataNormalized : getData;
 
       var compilation_error_data = createObjectToPlotData(data, data_count_obj,
-      "COMPILATION_ERROR", color_yellow, get_function);
+      "COMPILATION_ERROR", COLOR_COMPILATION_ERROR, get_function);
       var time_limit_data = createObjectToPlotData(data, data_count_obj,
-      "TIME_LIMIT_EXCEEDED", color_blue, get_function);
+      "TIME_LIMIT_EXCEEDED", COLOR_TIME_LIMIT_EXCEEDED, get_function);
       var memory_limit_data = createObjectToPlotData(data, data_count_obj,
-      "MEMORY_LIMIT_EXCEEDED", color_purple, get_function);
+      "MEMORY_LIMIT_EXCEEDED", COLOR_MEMORY_LIMIT_EXCEEDED, get_function);
       var runtime_error_data = createObjectToPlotData(data, data_count_obj,
-      "RUNTIME_ERROR", color_cyan, get_function);
+      "RUNTIME_ERROR", COLOR_RUNTIME_ERROR, get_function);
       var wrong_answer_data = createObjectToPlotData(data, data_count_obj,
-      "WRONG_ANSWER", color_red, get_function);
+      "WRONG_ANSWER", COLOR_WRONG_ANSWER, get_function);
       var internal_error_data = createObjectToPlotData(data, data_count_obj,
-      "INTERNAL_ERROR", color_brown, get_function);
+      "INTERNAL_ERROR", COLOR_INTERNAL_ERROR, get_function);
       var accepted_data = createObjectToPlotData(data, data_count_obj,
-      "ACCEPTED", color_aquamarine, get_function);
+      "ACCEPTED", COLOR_ACCEPTED, get_function);
 
 
 
-      var data = [compilation_error_data, time_limit_data, memory_limit_data, runtime_error_data, wrong_answer_data, internal_error_data, accepted_data];
+      var data = [compilation_error_data, time_limit_data, memory_limit_data,
+      runtime_error_data, wrong_answer_data, internal_error_data, accepted_data];
 
       var layout = {
         barmode: 'stack',
@@ -87,7 +80,7 @@
           categoryarray : tasks_ids,
           titlefont:{
             size: 16,
-            color: color_gray,
+            color: COLOR_LABEL,
 
           }
         },
@@ -95,7 +88,7 @@
           title: yLabel,
           titlefont: {
             size: 16,
-            color: color_gray
+            color: COLOR_LABEL
           }
         }
       };
@@ -221,7 +214,8 @@
         SubmissionsVerdictStatistic.prototype._fetchData = function() {
             return $.get('/api/stats/admin/submissions_verdict', {course_id: courseId}, null, "json");
         };
-        SubmissionsVerdictStatistic.prototype.toggle = function(){
+        
+        SubmissionsVerdictStatistic.prototype.toggleNormalize = function(){
             this.toggle_normalize_submissions_per_tasks = !this.toggle_normalize_submissions_per_tasks;
             this.plotAsync();
         }
@@ -249,7 +243,8 @@
         BestSubmissionsVerdictStatistic.prototype._fetchData = function() {
             return $.get('/api/stats/admin/best_submissions_verdict', {course_id: courseId}, null, "json");
         };
-        BestSubmissionsVerdictStatistic.prototype.toggle = function(){
+
+        BestSubmissionsVerdictStatistic.prototype.toggleNormalize = function(){
             this.toggle_normalize_best_submissions_per_tasks = !this.toggle_normalize_best_submissions_per_tasks;
             this.plotAsync();
         }
