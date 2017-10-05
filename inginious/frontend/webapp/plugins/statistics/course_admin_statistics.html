@@ -29,10 +29,12 @@ $var Navbar: $:NavbarF()
         <div role="tabpanel" class="tab-pane active" id="gradeCount">
             <h4>Submissions by grade</h4>
             <div id="statisticsGradeDiv" class="statistics-grade"></div>
+            <button type="button" class="btn btn-link" onclick="gradeCountStatistic.downloadCsvAsync()">Download CSV</button>
         </div>
         <div role="tabpanel" class="tab-pane" id="gradeDistribution">
             <h4>Final grade distribution</h4>
             <div id="statisticsGradeDistributionDiv" class="statistics-grade"></div>
+            <button type="button" class="btn btn-link" onclick="gradeDistributionStatistic.downloadCsvAsync()">Download CSV</button>
         </div>
     </div>
 

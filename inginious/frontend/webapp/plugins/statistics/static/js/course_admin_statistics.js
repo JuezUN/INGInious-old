@@ -37,6 +37,21 @@ var GradeDistributionStatistic = (function() {
         return $.get('/api/stats/admin/grade_distribution', {course_id: adminStatistics.courseId}, null, "json");
     };
 
+    GradeDistributionStatistic.prototype._fetchCsvData = function() {
+        return this._fetchAndCacheData().then(function(data) {
+            // Unwrap each grade so the CSV is properly generated.
+            return _.flatMap(data, function(taskElement) {
+                return _.map(taskElement.grades, function(grade) {
+                    return {
+                        task_id: taskElement.task_id,
+                        task_name: taskElement.task_name,
+                        grade: grade
+                    };
+                });
+            });
+        });
+    };
+
     return GradeDistributionStatistic;
 })();
 
@@ -90,6 +105,22 @@ var GradeCountStatistic = (function() {
 
     GradeCountStatistic.prototype._fetchData = function() {
         return $.get('/api/stats/admin/grade_count', {course_id: adminStatistics.courseId}, null, "json");
+    };
+
+    GradeCountStatistic.prototype._fetchCsvData = function() {
+        return this._fetchAndCacheData().then(function(data) {
+            // Unwrap each grade so the CSV is properly generated.
+            return _.flatMap(data, function(taskElement) {
+                return _.map(taskElement.grades, function(gradeElement) {
+                    return {
+                        task_id: taskElement.task_id,
+                        task_name: taskElement.task_name,
+                        grade: gradeElement.grade,
+                        count: gradeElement.count
+                    };
+                });
+            });
+        });
     };
 
     return GradeCountStatistic;
