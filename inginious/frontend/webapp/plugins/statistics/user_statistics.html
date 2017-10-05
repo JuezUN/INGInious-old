@@ -10,22 +10,20 @@ $var title: My Statistics
 <div class="tab-content">
     <div id="trials-circle" class="tab-pane fade in active">
         <h3>Trials and Best Grade</h3>
-        <div id="tries_per_task" style="width: 100%"><!-- Plotly chart will be drawn inside this DIV --></div>
+        <div id="tries_per_task" class="statistics-plot"><!-- Plotly chart will be drawn inside this DIV --></div>
         <a href='#' onclick='UserStatistics.trialsAndBestGradeStatistic.downloadCsvAsync();'>Download CSV</a>
     </div>
     <div id="bar-submissions-per-tasks" class="tab-pane fade">
         <h3>Bar Submissions Per Tasks</h3>
-        <div id="submissions_per_task" style="height: 500px;"><!-- Plotly chart will be drawn inside this DIV --></div>
-        <div class="normalize" id="normalize_submissions_per_task" style="display: flex;justify-content: center;">
-          <button style="background-color: white;padding: 8px 15px;text-align: center;font-size: 12px;"
-                  onclick="UserStatistics.barSubmissionsPerTasks.toggle_normalize()">
+        <div id="submissions_per_task" class="statistics-plot"><!-- Plotly chart will be drawn inside this DIV --></div>
+        <div id="normalize_submissions_per_task" class="normalize">
+          <button class="toggle_button" onclick="UserStatistics.barSubmissionsPerTasks.toggle_normalize()">
                   Toggle normalize
           </button>
         </div>
         <a href='#' onclick='UserStatistics.barSubmissionsPerTasks.downloadCsvAsync();'>Download CSV</a>
     </div>
 </div>
-
 
 <script>
     function getCourseId() {
