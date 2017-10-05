@@ -10,6 +10,7 @@ from inginious.common.filesystems.local import LocalFSProvider
 from inginious.common.course_factory import CourseNotFoundException, CourseUnreadableException, InvalidNameException
 from .utils import convert_task_dict_to_sorted_list
 
+
 _BASE_RENDERER_PATH = 'frontend/webapp/plugins/statistics'
 _BASE_STATIC_FOLDER = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
 
@@ -34,6 +35,7 @@ def statistics_course_admin_menu_hook(course):
     return "statistics", '<i class="fa fa-bar-chart" aria-hidden="true"></i> Course statistics'
 
 
+
 class StatisticsAdminApi(api.APIAuthenticatedPage):
     def get_course_and_check_rights(self, course_id):
         try:
@@ -52,6 +54,155 @@ class StatisticsAdminApi(api.APIAuthenticatedPage):
 
         return parameters[parameter_name]
 
+
+class BestSubmissionsByVerdictApi(StatisticsAdminApi):
+
+    def get_best_statistics_by_verdict(self, course):
+        course_id = course.get_id()
+        best_statistics_by_verdict = self.database.user_tasks.aggregate([
+                {
+                    "$match":
+                        {
+                            "courseid": course_id
+                        }
+                },
+                {
+                    "$lookup":
+                        {
+                            "from": "submissions",
+                            "localField": "submissionid",
+                            "foreignField": "_id",
+                            "as": "submission"
+                        }
+                },
+                {
+                    "$unwind":
+                        {
+                            "path": "$submission"
+                        }
+                },
+                {
+                    "$group": {
+                        "_id": {"summary_result": "$submission.custom.summary_result",
+                                "taskid": "$taskid"},
+                        "count": {"$sum": 1}
+                    }
+                },
+                {
+                    "$project": {
+                        "_id": 0,
+                        "task_id": "$_id.taskid",
+                        "summary_result": "$_id.summary_result",
+                        "count": 1
+                    }
+                },
+                {
+                    "$match":
+                        {
+                            "summary_result": {"$ne": None}
+                        }
+                }
+            ])
+
+        return best_statistics_by_verdict
+
+    def API_GET(self):
+        parameters = web.input()
+
+        course_id = self.get_mandatory_parameter(parameters, "course_id")
+        course = self.get_course_and_check_rights(course_id)
+
+        best_statistics_by_verdict = self.get_best_statistics_by_verdict(course)
+        course_tasks = course.get_tasks()
+        sorted_tasks = sorted(course_tasks.values(), key=lambda task: task.get_order())
+
+        task_id_to_statistics = {}
+        for element in best_statistics_by_verdict:
+            task_id = element["task_id"]
+
+            if task_id not in task_id_to_statistics:
+                task_id_to_statistics[task_id] = []
+
+            task_id_to_statistics[task_id].append({
+                "count": element["count"],
+                "summary_result": element["summary_result"]
+            })
+
+        best_statistics_by_verdict = []
+
+        for task in sorted_tasks:
+            _id = task.get_id()
+            verdicts = task_id_to_statistics.get(_id, [])
+            for verdict in verdicts:
+                best_statistics_by_verdict.append({
+                    "task_id": _id,
+                    "summary_result": verdict["summary_result"],
+                    "count": verdict["count"]
+                })
+        return 200, best_statistics_by_verdict
+
+
+class SubmissionsByVerdictApi(StatisticsAdminApi):
+
+    def get_statistics_by_verdict(self, course):
+        course_id = course.get_id()
+        statistics_by_verdict = self.database.submissions.aggregate([
+            {"$match": {"courseid": course_id, "custom.summary_result": {"$ne": None}}},
+            {
+                "$group": {
+                    "_id": {"summary_result": "$custom.summary_result",
+                            "task_id": "$taskid"
+                            },
+                    "count": {"$sum": 1}
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0,
+                    "task_id": "$_id.task_id",
+                    "summary_result": "$_id.summary_result",
+                    "count": 1
+                }
+            }
+        ])
+
+        return statistics_by_verdict
+
+    def API_GET(self):
+        parameters = web.input()
+
+        course_id = self.get_mandatory_parameter(parameters, "course_id")
+        course = self.get_course_and_check_rights(course_id)
+
+        statistics_by_verdict = self.get_statistics_by_verdict(course)
+        course_tasks = course.get_tasks()
+        sorted_tasks = sorted(course_tasks.values(), key=lambda task: task.get_order())
+
+        task_id_to_statistics = {}
+        for element in statistics_by_verdict:
+            task_id = element["task_id"]
+
+            if task_id not in task_id_to_statistics:
+                task_id_to_statistics[task_id] = []
+
+            task_id_to_statistics[task_id].append({
+                "count": element["count"],
+                "summary_result": element["summary_result"]
+            })
+
+
+        statistics_by_verdict = []
+
+        for task in sorted_tasks:
+            _id = task.get_id()
+            verdicts = task_id_to_statistics.get(_id, [])
+            for verdict in verdicts:
+                statistics_by_verdict.append({
+                    "task_id": _id,
+                    "summary_result": verdict["summary_result"],
+                    "count": verdict["count"]
+                })
+        return 200, statistics_by_verdict
 
 class GradeCountStatisticsApi(StatisticsAdminApi):
     def _compute_grade_count_statistics(self, course_id):
@@ -103,6 +254,7 @@ class GradeDistributionStatisticsApi(StatisticsAdminApi):
             grouped_grades[task_id].append(item["grade"])
 
         return grouped_grades
+
 
     def API_GET(self):
         parameters = web.input()

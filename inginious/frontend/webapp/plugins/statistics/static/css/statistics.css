@@ -2,3 +2,10 @@
 .statistics-grade {
   max-width: 100%;
 }
+
+.button-normalize{
+    background-color: white;
+    padding: 8px 15px;
+    text-align: center;
+    font-size: 12px;
+}

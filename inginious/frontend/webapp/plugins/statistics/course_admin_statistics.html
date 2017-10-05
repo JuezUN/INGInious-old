@@ -13,7 +13,6 @@ $var Navbar: $:NavbarF()
 <h3>Statistics for course: $:course.get_name()</h3>
 
 <div>
-
     <!-- Nav tabs -->
     <ul class="nav nav-tabs" role="tablist">
         <li role="presentation" class="active">
@@ -21,6 +20,12 @@ $var Navbar: $:NavbarF()
         </li>
         <li role="presentation">
             <a href="#gradeDistribution" aria-controls="gradeDistribution" role="tab" data-toggle="tab">Grade distribution</a>
+        </li>
+        <li role="presentation">
+            <a href="#submissionsVerdict" aria-controls="submissionsVerdict" role="tab" data-toggle="tab">Submissions Verdict (ALL)</a>
+        </li>
+        <li role="presentation">
+            <a href="#bestSubmissionsVerdict" aria-controls="bestSubmissionsVerdict" role="tab" data-toggle="tab">Submissions Verdict (BEST)</a>
         </li>
     </ul>
 
@@ -36,9 +41,29 @@ $var Navbar: $:NavbarF()
             <div id="statisticsGradeDistributionDiv" class="statistics-grade"></div>
             <button type="button" class="btn btn-link" onclick="gradeDistributionStatistic.downloadCsvAsync()">Download CSV</button>
         </div>
+        <div role="tabpanel" class="tab-pane" id="submissionsVerdict">
+            <h4>Submissions Verdict (ALL)</h4>
+            <div id="submissionsVerdictDiv" class="statistics-grade"></div>
+            <button type="button" class="btn btn-link" onclick="submissionsVerdictStatistic.downloadCsvAsync()">Download CSV</button>
+            <button class="button-normalize"
+                    onclick="tabToStatistic.submissionsVerdict.toggleNormalize()">
+                    Toggle normalize
+            </button>
+        </div>
+        <div role="tabpanel" class="tab-pane" id="bestSubmissionsVerdict">
+            <h4>Submissions Verdict (BEST)</h4>
+            <div id="bestSubmissionsVerdictDiv" class="statistics-grade"></div>
+            <button type="button" class="btn btn-link" onclick="bestSubmissionsVerdictStatistic.downloadCsvAsync()">Download CSV</button>
+            <button class="button-normalize"
+                    onclick="tabToStatistic.bestSubmissionsVerdict.toggleNormalize()">
+                    Toggle normalize
+            </button>
+        </div>
     </div>
 
 </div>
+
+
 
 <script type="text/javascript">
     var adminStatistics = {
