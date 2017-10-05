@@ -380,6 +380,7 @@ class SubmissionsByVerdictApi(StatisticsAdminApi):
                 })
         return 200, statistics_by_verdict
 
+
 class GradeCountStatisticsApi(StatisticsAdminApi):
     def _compute_grade_count_statistics(self, course_id):
         statistics_by_grade = self.database.user_tasks.aggregate([
@@ -414,6 +415,34 @@ class GradeCountStatisticsApi(StatisticsAdminApi):
                                                                      include_all_tasks=True)
 
         return 200, statistics_by_grade_count
+
+
+class GradeCountStatisticsDetailApi(StatisticsAdminApi):
+    def _compute_details(self, course_id, grade, task_id):
+        submissions = self.database.user_tasks.find(
+            {"$and": [{"courseid": course_id}, {"taskid": task_id}, {"grade": {"$lte": grade}},
+                      {"grade": {"$gt": grade - 1}}]},
+            {"grade": 1, "username": 1, "submissionid": 1}
+        )
+
+        return [{
+            "grade": s["grade"],
+            "username": s["username"],
+            "submissionid": str(s["submissionid"])
+        } for s in submissions]
+
+    def API_GET(self):
+        parameters = web.input()
+
+        course_id = self.get_mandatory_parameter(parameters, 'course_id')
+        self.get_course_and_check_rights(course_id)
+
+        grade = int(self.get_mandatory_parameter(parameters, 'grade'))
+        task_id = self.get_mandatory_parameter(parameters, 'task_id')
+
+        submissions = self._compute_details(course_id, grade, task_id)
+
+        return 200, submissions
 
 
 class GradeDistributionStatisticsApi(StatisticsAdminApi):

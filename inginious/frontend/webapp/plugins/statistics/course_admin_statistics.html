@@ -35,6 +35,19 @@ $var Navbar: $:NavbarF()
             <h4>Submissions by grade</h4>
             <div id="statisticsGradeDiv" class="statistics-grade"></div>
             <button type="button" class="btn btn-link" onclick="gradeCountStatistic.downloadCsvAsync()">Download CSV</button>
+
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Grade</th>
+                        <th>Submission</th>
+                    </tr>
+                </thead>
+                <tbody id="statisticsGradeTableBody">
+
+                </tbody>
+            </table>
         </div>
         <div role="tabpanel" class="tab-pane" id="gradeDistribution">
             <h4>Final grade distribution</h4>

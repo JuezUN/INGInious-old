@@ -61,3 +61,14 @@ var Statistic = (function () {
 
     return Statistic;
 })();
+
+function createSubmissionLink(courseId, userName, taskId, submissionId) {
+    var urlTemplate = _.template("/admin/${ courseId }/student/${ userName }/${ taskId }/${ submissionId }");
+
+    return urlTemplate({
+        courseId: courseId,
+        userName: userName,
+        taskId: taskId,
+        submissionId: submissionId
+    });
+}

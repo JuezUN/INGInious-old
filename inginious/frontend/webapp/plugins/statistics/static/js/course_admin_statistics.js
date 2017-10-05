@@ -157,61 +157,6 @@
         });
     };
 
-    var GradeCountStatistic = (function() {
-        function GradeCountStatistic(containerId) {
-            Statistic.call(this);
-            this.containerId = containerId;
-        }
-
-        GradeCountStatistic.prototype = Object.create(Statistic.prototype);
-
-        GradeCountStatistic.prototype._plotData = function(data) {
-            var allGrades = _.flatMap(data, function(item) {
-                return item.grades;
-            });
-
-            var studentCountToPixels = 1e-03 * _.meanBy(allGrades, function(item) {
-                return item.count;
-            });
-
-            var plotData = {
-                mode: 'markers',
-                x: [],
-                y: [],
-                text: [],
-                marker: {
-                    sizemode: "area",
-                    size: [],
-                    sizeref: studentCountToPixels
-                }
-            };
-
-            for(var i = 0; i < data.length; ++i) {
-                var grades = data[i].grades;
-                for(var j = 0; j < grades.length; ++j) {
-                    plotData.x.push(data[i].task_name);
-                    plotData.y.push(grades[j].grade);
-                    plotData.text.push("Students: " + grades[j].count);
-                    plotData.marker.size.push(grades[j].count);
-                }
-            }
-
-            var layout = {
-                xaxis: {title: 'Task name', type: 'category'},
-                yaxis: {title: 'Grade', type: 'linear', range: [-10, 110]},
-                hovermode: 'closest'
-            };
-
-            Plotly.newPlot(this.containerId, [plotData], layout);
-        };
-
-        GradeCountStatistic.prototype._fetchData = function() {
-            return $.get('/api/stats/admin/grade_count', {course_id: adminStatistics.courseId}, null, "json");
-        };
-
-        return GradeCountStatistic;
-    })();
-
     var SubmissionsVerdictStatistic = (function() {
         function SubmissionsVerdictStatistic (containerId) {
             Statistic.call(this);
@@ -241,27 +186,6 @@
 
         return SubmissionsVerdictStatistic ;
     })();
-
-    GradeCountStatistic.prototype._fetchData = function() {
-        return $.get('/api/stats/admin/grade_count', {course_id: adminStatistics.courseId}, null, "json");
-    };
-
-    GradeCountStatistic.prototype._fetchCsvData = function() {
-        return this._fetchAndCacheData().then(function(data) {
-            // Unwrap each grade so the CSV is properly generated.
-            return _.flatMap(data, function(taskElement) {
-                return _.map(taskElement.grades, function(gradeElement) {
-                    return {
-                        task_id: taskElement.task_id,
-                        task_name: taskElement.task_name,
-                        grade: gradeElement.grade,
-                        count: gradeElement.count
-                    };
-                });
-            });
-        });
-    };
-
 
     var BestSubmissionsVerdictStatistic = (function() {
         function BestSubmissionsVerdictStatistic (containerId) {
@@ -313,6 +237,7 @@
                 mode: 'markers',
                 x: [],
                 y: [],
+                taskIds: [],
                 text: [],
                 marker: {
                     sizemode: "area",
@@ -326,6 +251,7 @@
                 for(var j = 0; j < grades.length; ++j) {
                     plotData.x.push(data[i].task_name);
                     plotData.y.push(grades[j].grade);
+                    plotData.taskIds.push(data[i].task_id);
                     plotData.text.push("Students: " + grades[j].count);
                     plotData.marker.size.push(grades[j].count);
                 }
@@ -338,10 +264,66 @@
             };
 
             Plotly.newPlot(this.containerId, [plotData], layout);
+
+            var statisticsGradeDiv = $("#statisticsGradeDiv");
+
+            statisticsGradeDiv.unbind('plotly_click');
+            statisticsGradeDiv[0].on('plotly_click', function(data) {
+                var point = data.points[0];
+                var pointNumber = point.pointNumber;
+                var taskId = point.data.taskIds[pointNumber];
+                var grade = point.y;
+
+                $.get('/api/stats/admin/grade_count_submissions', {
+                    course_id: adminStatistics.courseId,
+                    task_id: taskId,
+                    grade: grade
+                }, function(result) {
+                    var tableBody = $("#statisticsGradeTableBody");
+
+                    tableBody.empty();
+
+                    for(var i = 0; i < result.length; ++i) {
+                        var row = $("<tr/>");
+                        var entry = result[i];
+
+                        var cells = [entry.username, entry.grade, entry.submissionid];
+
+                        for(var j = 0; j < cells.length; ++j) {
+                            var cell = $("<td/>");
+                            cell.text(cells[j]);
+                            row.append(cell);
+                        }
+
+                        row.click(function() {
+                            window.location = createSubmissionLink(adminStatistics.courseId, entry.username,
+                                taskId, entry.submissionid);
+                        });
+
+                        tableBody.append(row);
+                    }
+                }, "json");
+            });
         };
 
         GradeCountStatistic.prototype._fetchData = function() {
             return $.get('/api/stats/admin/grade_count', {course_id: adminStatistics.courseId}, null, "json");
+        };
+
+        GradeCountStatistic.prototype._fetchCsvData = function() {
+            return this._fetchAndCacheData().then(function(data) {
+                // Unwrap each grade so the CSV is properly generated.
+                return _.flatMap(data, function(taskElement) {
+                    return _.map(taskElement.grades, function(gradeElement) {
+                        return {
+                            task_id: taskElement.task_id,
+                            task_name: taskElement.task_name,
+                            grade: gradeElement.grade,
+                            count: gradeElement.count
+                        };
+                    });
+                });
+            });
         };
 
         return GradeCountStatistic;
@@ -368,4 +350,6 @@
             }
         });
         $('.active > a[data-toggle="tab"]').trigger('shown.bs.tab');
+
+
     });
