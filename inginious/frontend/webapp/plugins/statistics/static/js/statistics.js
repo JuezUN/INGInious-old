@@ -61,25 +61,6 @@ var Statistic = (function () {
     return Statistic;
 })();
 
-var ExampleStatistic = (function () {
-    function ExampleStatistic() {
-        Statistic.call(this);
-    }
-
-    ExampleStatistic.prototype = Object.create(Statistic.prototype);
-
-    ExampleStatistic.prototype._plotData = function (data) {
-        console.log(data);
-        alert('Plot data');
-    };
-
-    ExampleStatistic.prototype._fetchData = function () {
-        return Promise.resolve([{'test_header': 'test'}]);
-    };
-
-    return ExampleStatistic;
-})();
-
 var UserTrialsAndBestGradeStatistic = (function () {
     function UserTrialsAndBestGradeStatistic(course_id) {
         this.course_id = course_id;
@@ -129,14 +110,12 @@ var UserTrialsAndBestGradeStatistic = (function () {
 
 
         for (var index = 0; index < tries_per_tasks.length; index++) {
-            for (var j = 0; j < results.length; j++) {
-                if (tries_per_tasks[index].result === results[j]) {
-                    plotData[results[j]]["x"].push(tries_per_tasks[index].taskid);
-                    plotData[results[j]]["y"].push(tries_per_tasks[index].grade);
-                    plotData[results[j]]["text"].push(tries_per_tasks[index].tried + " submissions");
-                    plotData[results[j]]["marker"]["size"].push(tries_per_tasks[index].tried);
-                }
-            }
+            var result = tries_per_tasks[index].result;
+
+            plotData[result]["x"].push(tries_per_tasks[index].taskid);
+            plotData[result]["y"].push(tries_per_tasks[index].grade);
+            plotData[result]["text"].push(tries_per_tasks[index].tried + " submissions");
+            plotData[result]["marker"]["size"].push(tries_per_tasks[index].tried);
         }
 
         var data = [];
@@ -192,12 +171,12 @@ var BarSubmissionsPerTasks = (function () {
         var tasks_id = [];
 
         for (var i = 0; i < data.length; ++i) {
-            if (data_count_obj[data[i].task_id] != null) {
-                data_count_obj[data[i].task_id] += data[i].count;
-            } else {
-                data_count_obj[data[i].task_id] = data[i].count;
-                tasks_id.push(data[i].task_id)
+            if (data_count_obj[data[i].task_id] == null) {
+                data_count_obj[data[i].task_id] = 0;
+                tasks_id.push(data[i].task_id);
             }
+
+            data_count_obj[data[i].task_id] += data[i].count;
         }
 
         var compilation_error_data = this.createObjectToPlotData(data, data_count_obj, "COMPILATION_ERROR", 'rgb(236,199,6)');
@@ -248,10 +227,10 @@ var BarSubmissionsPerTasks = (function () {
         for (var i = 0; i < data.length; ++i) {
             if (data[i].summary_result === verdict) {
                 plotData.x.push(data[i].task_id);
-                if (!this.normalize) {
-                    plotData.y.push(data[i].count);
-                } else {
+                if (this.normalize) {
                     plotData.y.push((data[i].count / data_count_obj[data[i].task_id]) * 100);
+                } else {
+                    plotData.y.push(data[i].count);
                 }
             }
         }
