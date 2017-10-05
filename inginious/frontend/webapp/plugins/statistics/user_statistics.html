@@ -28,17 +28,7 @@ $var title: My Statistics
 
 
 <script>
-    $$(function () {
-        UserStatistics.trialsAndBestGradeStatistic = new UserTrialsAndBestGradeStatistic("$:course_id");
-        UserStatistics.barSubmissionsPerTasks = new BarSubmissionsPerTasks("$:course_id");
-
-        $$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-            if(e.target.id === "trials-circle-tab"){
-                UserStatistics.trialsAndBestGradeStatistic.plotAsync();
-            }else if(e.target.id === "bar-submissions-per-tasks-tab"){
-                UserStatistics.barSubmissionsPerTasks.plotAsync();
-            }
-        });
-        $$('.active > a[data-toggle="tab"]').trigger('shown.bs.tab');
-    });
+    function getCourseId() {
+       return "$:course_id";
+    }
 </script>

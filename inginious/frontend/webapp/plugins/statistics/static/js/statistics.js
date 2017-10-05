@@ -242,3 +242,24 @@ var BarSubmissionsPerTasks = (function () {
 
     return BarSubmissionsPerTasks;
 })();
+
+
+$(function () {
+    UserStatistics.course_id = getCourseId();
+    UserStatistics.trialsAndBestGradeStatistic = new UserTrialsAndBestGradeStatistic(UserStatistics.course_id);
+    UserStatistics.barSubmissionsPerTasks = new BarSubmissionsPerTasks(UserStatistics.course_id);
+
+    var tabToStatistic = {
+        "trials-circle-tab": UserStatistics.trialsAndBestGradeStatistic,
+        "bar-submissions-per-tasks-tab": UserStatistics.barSubmissionsPerTasks
+    };
+
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        var statistic = tabToStatistic[e.target.id];
+
+        if (statistic) {
+            statistic.plotAsync();
+        }
+    });
+    $('.active > a[data-toggle="tab"]').trigger('shown.bs.tab');
+});
