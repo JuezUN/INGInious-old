@@ -39,6 +39,8 @@
 
       var data_count_obj = {};
 
+      var yLabel = normalized ? "Percentage of tasks" : "Number of tasks";
+
       var tasks_ids = [];
       for(var i = 0; i < data.length; i++){
         if(data_count_obj[data[i].task_id] == null){
@@ -90,7 +92,7 @@
           }
         },
         yaxis: {
-          title: 'Percentage of Sumbissions',
+          title: yLabel,
           titlefont: {
             size: 16,
             color: color_gray
