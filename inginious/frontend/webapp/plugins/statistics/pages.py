@@ -2,9 +2,9 @@ import web
 import posixpath
 import urllib
 import os
-import json
-from bson.json_util import dumps
-from datetime import datetime
+import inginious.frontend.webapp.pages.api._api_page as api
+from inginious.frontend.webapp.pages.api._api_page import APIAuthenticatedPage
+from inginious.common.course_factory import CourseNotFoundException, CourseUnreadableException, InvalidNameException
 from inginious.frontend.webapp.pages.utils import INGIniousAuthPage, INGIniousPage
 from inginious.common.filesystems.local import LocalFSProvider
 
@@ -51,25 +51,25 @@ class UserStatisticsPage(INGIniousAuthPage):
         )
 
 
-class UserStatisticsAPI(INGIniousAuthPage):
-    def GET_AUTH(self, *args, **kwargs):
-        self.ensure_parameters()
+class UserStatisticsAPI(APIAuthenticatedPage):
+    def API_GET(self):
+        self.validate_parameters()
         return self.statistics()
 
-    def ensure_parameters(self):
+    def validate_parameters(self):
         username = self.user_manager.session_username()
         course_id = web.input(course_id=None).course_id
 
         if course_id is None:
-            raise web.badrequest("400 Bad Request: Missing course_id in the query params")
+            raise api.APIError(400, {"error": "course_id is mandatory"})
 
         try:
             course = self.course_factory.get_course(course_id)
-        except:
-            raise web.notfound("404 Not found: The course does not exist")
+        except (CourseNotFoundException, InvalidNameException, CourseUnreadableException):
+            raise api.APIError(400, {"error": "The course does not exist or the user does not have permissions"})
 
         if not self.user_manager.course_is_user_registered(course, username):
-            raise web.forbidden("403 Forbidden: You are not registered in this course")
+            raise api.APIError(400, {"error": "The course does not exist or the user does not have permissions"})
 
     def statistics(self):
         return "[]"
@@ -117,8 +117,7 @@ class TrialsAndBestGrade(UserStatisticsAPI):
                         "result": "$submission.custom.summary_result",
                         "taskid": 1,
                         "tried": 1,
-                        "grade": 1,
-                        "date": "$submission.submitted_on"
+                        "grade": 1
                     }
             },
             {
@@ -129,13 +128,7 @@ class TrialsAndBestGrade(UserStatisticsAPI):
             }
         ])
 
-        return json.dumps(list(best_submissions), cls=DateTimeEncoder)
-
-
-class DateTimeEncoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, datetime):
-            return o.isoformat()
+        return 200, list(best_submissions)
 
 
 class BarSubmissionsPerTasks(UserStatisticsAPI):
@@ -204,4 +197,4 @@ class BarSubmissionsPerTasks(UserStatisticsAPI):
                     "count": verdict["count"]
                 })
 
-        return dumps(submissions_per_task)
+        return 200, submissions_per_task
