@@ -1,5 +1,16 @@
 //Global namespace
-var UserStatistics = {};
+var UserStatistics = {
+    "colors":
+        {
+            "COMPILATION_ERROR": 'rgb(236,199,6)',
+            "TIME_LIMIT_EXCEEDED": 'rgb(50,120,202)',
+            "MEMORY_LIMIT_EXCEEDED": 'rgb(119,92,133)',
+            "RUNTIME_ERROR": 'rgb(2,164,174)',
+            "WRONG_ANSWER": 'rgb(227,79,54)',
+            "INTERNAL_ERROR": 'rgb(137,139,37)',
+            "ACCEPTED": 'rgb(35,181,100)'
+        }
+};
 
 var CsvConverter = (function () {
     function CsvConverter(data) {
@@ -76,20 +87,8 @@ var UserTrialsAndBestGradeStatistic = (function () {
 
     UserTrialsAndBestGradeStatistic.prototype._plotData = function (tries_per_tasks) {
         var SUBMISSIONS_COUNT_TO_PIXELS = this._getRatio(tries_per_tasks);
-
-        var results =
-            [
-                "COMPILATION_ERROR",
-                "TIME_LIMIT_EXCEEDED",
-                "MEMORY_LIMIT_EXCEEDED",
-                "RUNTIME_ERROR",
-                "WRONG_ANSWER",
-                "INTERNAL_ERROR",
-                "ACCEPTED"
-            ];
-
-
         var plotData = {};
+        var results = Object.keys(UserStatistics.colors);
 
         for (var index = 0; index < results.length; index++) {
             plotData[results[index]] =
@@ -98,6 +97,7 @@ var UserTrialsAndBestGradeStatistic = (function () {
                     "name": results[index],
                     "marker":
                         {
+                            "color": UserStatistics.colors[results[index]],
                             "sizemode": "area",
                             "sizeref": SUBMISSIONS_COUNT_TO_PIXELS,
                             "size": []
@@ -179,13 +179,15 @@ var BarSubmissionsPerTasks = (function () {
             data_count_obj[data[i].task_id] += data[i].count;
         }
 
-        var compilation_error_data = this.createObjectToPlotData(data, data_count_obj, "COMPILATION_ERROR", 'rgb(236,199,6)');
-        var time_limit_data = this.createObjectToPlotData(data, data_count_obj, "TIME_LIMIT_EXCEEDED", 'rgb(50,120,202)');
-        var memory_limit_data = this.createObjectToPlotData(data, data_count_obj, "MEMORY_LIMIT_EXCEEDED", 'rgb(119,92,133)');
-        var runtime_error_data = this.createObjectToPlotData(data, data_count_obj, "RUNTIME_ERROR", 'rgb(2,164,174)');
-        var wrong_answer_data = this.createObjectToPlotData(data, data_count_obj, "WRONG_ANSWER", 'rgb(227,79,54)');
-        var internal_error_data = this.createObjectToPlotData(data, data_count_obj, "INTERNAL_ERROR", 'rgb(137,139,37)');
-        var accepted_data = this.createObjectToPlotData(data, data_count_obj, "ACCEPTED", 'rgb(35,181,100)');
+        var colors = UserStatistics.colors;
+
+        var compilation_error_data = this.createObjectToPlotData(data, data_count_obj, "COMPILATION_ERROR", colors["COMPILATION_ERROR"]);
+        var time_limit_data = this.createObjectToPlotData(data, data_count_obj, "TIME_LIMIT_EXCEEDED", colors["TIME_LIMIT_EXCEEDED"]);
+        var memory_limit_data = this.createObjectToPlotData(data, data_count_obj, "MEMORY_LIMIT_EXCEEDED", colors["MEMORY_LIMIT_EXCEEDED"]);
+        var runtime_error_data = this.createObjectToPlotData(data, data_count_obj, "RUNTIME_ERROR", colors["RUNTIME_ERROR"]);
+        var wrong_answer_data = this.createObjectToPlotData(data, data_count_obj, "WRONG_ANSWER", colors["WRONG_ANSWER"]);
+        var internal_error_data = this.createObjectToPlotData(data, data_count_obj, "INTERNAL_ERROR", colors["INTERNAL_ERROR"]);
+        var accepted_data = this.createObjectToPlotData(data, data_count_obj, "ACCEPTED", colors["ACCEPTED"]);
 
         var plotData = [compilation_error_data, time_limit_data, memory_limit_data, runtime_error_data, wrong_answer_data, internal_error_data, accepted_data];
 
