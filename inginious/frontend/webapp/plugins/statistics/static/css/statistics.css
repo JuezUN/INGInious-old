@@ -2,3 +2,10 @@
 .statistics-outcome {
   max-width: 600px;
 }
+
+.button-normalize{
+    background-color: white;
+    padding: 8px 15px;
+    text-align: center;
+    font-size: 12px;
+}

@@ -1,5 +1,13 @@
 var toggle_normalize_submissions_per_tasks = false;
 var toggle_normalize_best_submissions_per_tasks = false;
+var color_yellow = 'rgb(236,199,6)';
+var color_blue = 'rgb(50,120,202)';
+var color_purple = 'rgb(119,92,133)';
+var color_cyan = 'rgb(2,164,174)';
+var color_red = 'rgb(227,79,54)';
+var color_brown = 'rgb(137,139,37)';
+var color_aquamarine = 'rgb(35,181,100)';
+var color_gray = 'rgb(107, 107, 107)';
 
 function plotVerdictStatistics(id_div, statistics){
   var data = statistics.by_verdict;
@@ -67,13 +75,22 @@ function plotVerdictStatisticsChart(id_div, data, statistic_title, normalized) {
     get_function = getData;
   }
 
-  var compilation_error_data = createObjectToPlotData(data, data_count_obj, "COMPILATION_ERROR", 'rgb(236,199,6)', get_function);
-  var time_limit_data = createObjectToPlotData(data, data_count_obj,"TIME_LIMIT_EXCEEDED", 'rgb(50,120,202)', get_function);
-  var memory_limit_data = createObjectToPlotData(data, data_count_obj,"MEMORY_LIMIT_EXCEEDED", 'rgb(119,92,133)', get_function);
-  var runtime_error_data = createObjectToPlotData(data, data_count_obj,"RUNTIME_ERROR", 'rgb(2,164,174)', get_function);
-  var wrong_answer_data = createObjectToPlotData(data, data_count_obj,"WRONG_ANSWER", 'rgb(227,79,54)', get_function);
-  var internal_error_data = createObjectToPlotData(data, data_count_obj,"INTERNAL_ERROR", 'rgb(137,139,37)', get_function);
-  var accepted_data = createObjectToPlotData(data, data_count_obj,"ACCEPTED", 'rgb(35,181,100)', get_function);
+
+
+  var compilation_error_data = createObjectToPlotData(data, data_count_obj,
+  "COMPILATION_ERROR", color_yellow, get_function);
+  var time_limit_data = createObjectToPlotData(data, data_count_obj,
+  "TIME_LIMIT_EXCEEDED", color_blue, get_function);
+  var memory_limit_data = createObjectToPlotData(data, data_count_obj,
+  "MEMORY_LIMIT_EXCEEDED", color_purple, get_function);
+  var runtime_error_data = createObjectToPlotData(data, data_count_obj,
+  "RUNTIME_ERROR", color_cyan, get_function);
+  var wrong_answer_data = createObjectToPlotData(data, data_count_obj,
+  "WRONG_ANSWER", color_red, get_function);
+  var internal_error_data = createObjectToPlotData(data, data_count_obj,
+  "INTERNAL_ERROR", color_brown, get_function);
+  var accepted_data = createObjectToPlotData(data, data_count_obj,
+  "ACCEPTED", color_aquamarine, get_function);
 
   var tasks_ids = [];
   var seen = new Set();
@@ -95,7 +112,7 @@ function plotVerdictStatisticsChart(id_div, data, statistic_title, normalized) {
       categoryarray : tasks_ids,
       titlefont:{
         size: 16,
-        color: 'rgb(107,107,107)',
+        color: color_gray,
 
       }
     },
@@ -103,7 +120,7 @@ function plotVerdictStatisticsChart(id_div, data, statistic_title, normalized) {
       title: 'Percentage of Sumbissions',
       titlefont: {
         size: 16,
-        color: 'rgb(107,107,107)'
+        color: color_gray
       }
     }
   };
