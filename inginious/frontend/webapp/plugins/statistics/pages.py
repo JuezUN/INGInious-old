@@ -2,12 +2,13 @@ import web
 import posixpath
 import urllib
 import os
+import collections
 import inginious.frontend.webapp.pages.api._api_page as api
-from inginious.frontend.webapp.pages.utils import INGIniousAuthPage, INGIniousPage
+from inginious.frontend.webapp.pages.utils import INGIniousPage
 from inginious.frontend.webapp.pages.course_admin.utils import INGIniousAdminPage
 from inginious.common.filesystems.local import LocalFSProvider
 from inginious.common.course_factory import CourseNotFoundException, CourseUnreadableException, InvalidNameException
-import json
+from .utils import convert_task_dict_to_sorted_list
 
 
 _BASE_RENDERER_PATH = 'frontend/webapp/plugins/statistics'
@@ -29,9 +30,10 @@ class StaticResourcePage(INGIniousPage):
 
         raise web.notfound()
 
+
 def statistics_course_admin_menu_hook(course):
-    course_statistics_link = ""
-    return ("statistics", '<i class="fa fa-bar-chart" aria-hidden="true"></i> Course statistics')
+    return "statistics", '<i class="fa fa-bar-chart" aria-hidden="true"></i> Course statistics'
+
 
 
 class StatisticsAdminApi(api.APIAuthenticatedPage):
@@ -45,6 +47,12 @@ class StatisticsAdminApi(api.APIAuthenticatedPage):
             raise api.APIError(400, {"error": "Invalid course"})
 
         return course
+
+    def get_mandatory_parameter(self, parameters, parameter_name):
+        if parameter_name not in parameters:
+            raise api.APIError(400, {"error": parameter_name + " is mandatory"})
+
+        return parameters[parameter_name]
 
 
 class BestSubmissionsByVerdictApi(StatisticsAdminApi):
@@ -101,11 +109,7 @@ class BestSubmissionsByVerdictApi(StatisticsAdminApi):
     def API_GET(self):
         parameters = web.input()
 
-        # Validate course_id
-        if 'course_id' not in parameters:
-            raise api.APIError(400, {"error": "course_id is mandatory"})
-
-        course_id = parameters["course_id"]
+        course_id = self.get_mandatory_parameter(parameters, "course_id")
         course = self.get_course_and_check_rights(course_id)
 
         best_statistics_by_verdict = self.get_best_statistics_by_verdict(course)
@@ -167,11 +171,7 @@ class SubmissionsByVerdictApi(StatisticsAdminApi):
     def API_GET(self):
         parameters = web.input()
 
-        # Validate course_id
-        if 'course_id' not in parameters:
-            raise api.APIError(400, {"error": "course_id is mandatory"})
-
-        course_id = parameters["course_id"]
+        course_id = self.get_mandatory_parameter(parameters, "course_id")
         course = self.get_course_and_check_rights(course_id)
 
         statistics_by_verdict = self.get_statistics_by_verdict(course)
@@ -189,6 +189,7 @@ class SubmissionsByVerdictApi(StatisticsAdminApi):
                 "count": element["count"],
                 "summary_result": element["summary_result"]
             })
+
 
         statistics_by_verdict = []
 
@@ -215,12 +216,9 @@ class GradeCountStatisticsApi(StatisticsAdminApi):
             }
         ])
 
-        task_id_to_statistics = {}
+        task_id_to_statistics = collections.defaultdict(list)
         for element in statistics_by_grade:
             task_id = element["_id"]["task"]
-
-            if task_id not in task_id_to_statistics:
-                task_id_to_statistics[task_id] = []
 
             task_id_to_statistics[task_id].append({
                 "grade": element["_id"]["grade"],
@@ -232,27 +230,15 @@ class GradeCountStatisticsApi(StatisticsAdminApi):
     def API_GET(self):
         parameters = web.input()
 
-        # Validate course_id
-        if 'course_id' not in parameters:
-            raise api.APIError(400, {"error": "course_id is mandatory"})
-
-        course_id = parameters["course_id"]
+        course_id = self.get_mandatory_parameter(parameters, 'course_id')
         course = self.get_course_and_check_rights(course_id)
 
-        course_tasks = course.get_tasks()
-        sorted_tasks = sorted(course_tasks.values(), key=lambda task: task.get_order())
-
         grade_count_statistics = self._compute_grade_count_statistics(course_id)
-
-        statistics_by_grade_count = [
-            {
-                "task_id": task.get_id(),
-                "task_name": task.get_name(),
-                "grades": grade_count_statistics.get(task.get_id(), [])
-            } for task in sorted_tasks
-        ]
+        statistics_by_grade_count = convert_task_dict_to_sorted_list(course, grade_count_statistics, 'grades',
+                                                                     include_all_tasks=True)
 
         return 200, statistics_by_grade_count
+
 
 class GradeDistributionStatisticsApi(StatisticsAdminApi):
     def _compute_grade_distribution_statistics(self, course_id):
@@ -261,12 +247,9 @@ class GradeDistributionStatisticsApi(StatisticsAdminApi):
             {"taskid": 1, "grade": 1, "username": 1}
         )
 
-        grouped_grades = {}
+        grouped_grades = collections.defaultdict(list)
         for item in all_grades:
             task_id = item["taskid"]
-
-            if task_id not in grouped_grades:
-                grouped_grades[task_id] = []
 
             grouped_grades[task_id].append(item["grade"])
 
@@ -276,33 +259,21 @@ class GradeDistributionStatisticsApi(StatisticsAdminApi):
     def API_GET(self):
         parameters = web.input()
 
-        # Validate course_id
-        if 'course_id' not in parameters:
-            raise api.APIError(400, {"error": "course_id is mandatory"})
-
-        course_id = parameters["course_id"]
+        course_id = self.get_mandatory_parameter(parameters, 'course_id')
         course = self.get_course_and_check_rights(course_id)
 
-        course_tasks = course.get_tasks()
-        sorted_tasks = sorted(course_tasks.values(), key=lambda task: task.get_order())
-
         grade_distribution_statistics = self._compute_grade_distribution_statistics(course_id)
-
-        statistics_by_grade_distribution = [
-            {
-                "task_id": task.get_id(),
-                "task_name": task.get_name(),
-                "grades": grade_distribution_statistics.get(task.get_id(), [])
-            } for task in sorted_tasks
-        ]
+        statistics_by_grade_distribution = convert_task_dict_to_sorted_list(course, grade_distribution_statistics,
+                                                                            'grades', include_all_tasks=True)
 
         return 200, statistics_by_grade_distribution
 
 
-class CourseStatisticsPage(INGIniousAdminPage):
+class CourseAdminStatisticsPage(INGIniousAdminPage):
     def GET_AUTH(self, course_id):
         course, _ = self.get_course_and_check_rights(course_id)
 
+        self.template_helper.add_javascript("https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.3.6/papaparse.min.js")
         self.template_helper.add_javascript("https://cdn.plot.ly/plotly-1.30.0.min.js")
         self.template_helper.add_javascript("https://cdn.jsdelivr.net/npm/lodash@4.17.4/lodash.min.js")
         self.template_helper.add_javascript("/static/statistics/js/statistics.js")
@@ -310,6 +281,6 @@ class CourseStatisticsPage(INGIniousAdminPage):
         self.template_helper.add_css("/static/statistics/css/statistics.css")
 
         return (
-            self.template_helper.get_custom_renderer(_BASE_RENDERER_PATH).course_statistics(
+            self.template_helper.get_custom_renderer(_BASE_RENDERER_PATH).course_admin_statistics(
                 course)
         )

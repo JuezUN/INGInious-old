@@ -34,14 +34,17 @@ $var Navbar: $:NavbarF()
         <div role="tabpanel" class="tab-pane active" id="gradeCount">
             <h4>Submissions by grade</h4>
             <div id="statisticsGradeDiv" class="statistics-grade"></div>
+            <button type="button" class="btn btn-link" onclick="gradeCountStatistic.downloadCsvAsync()">Download CSV</button>
         </div>
         <div role="tabpanel" class="tab-pane" id="gradeDistribution">
             <h4>Final grade distribution</h4>
             <div id="statisticsGradeDistributionDiv" class="statistics-grade"></div>
+            <button type="button" class="btn btn-link" onclick="gradeDistributionStatistic.downloadCsvAsync()">Download CSV</button>
         </div>
         <div role="tabpanel" class="tab-pane" id="submissionsVerdict">
             <h4>Submissions Verdict (ALL)</h4>
             <div id="submissionsVerdictDiv" class="statistics-grade"></div>
+            <button type="button" class="btn btn-link" onclick="submissionsVerdictStatistic.downloadCsvAsync()">Download CSV</button>
             <button class="button-normalize"
                     onclick="tabToStatistic.submissionsVerdict.toggleNormalize()">
                     Toggle normalize
@@ -50,6 +53,7 @@ $var Navbar: $:NavbarF()
         <div role="tabpanel" class="tab-pane" id="bestSubmissionsVerdict">
             <h4>Submissions Verdict (BEST)</h4>
             <div id="bestSubmissionsVerdictDiv" class="statistics-grade"></div>
+            <button type="button" class="btn btn-link" onclick="bestSubmissionsVerdictStatistic.downloadCsvAsync()">Download CSV</button>
             <button class="button-normalize"
                     onclick="tabToStatistic.bestSubmissionsVerdict.toggleNormalize()">
                     Toggle normalize
@@ -62,5 +66,7 @@ $var Navbar: $:NavbarF()
 
 
 <script type="text/javascript">
-    var courseId = "$:course.get_id()";
+    var adminStatistics = {
+        courseId: "$:course.get_id()"
+    };
 </script>

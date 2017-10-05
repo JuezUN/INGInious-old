@@ -40,8 +40,12 @@ var Statistic = (function() {
         });
     };
 
+    Statistic.prototype._fetchCsvData = function() {
+        return this._fetchAndCacheData();
+    };
+
     Statistic.prototype.downloadCsvAsync = function() {
-        this._fetchAndCacheData().then(function(data) {
+        this._fetchCsvData().then(function(data) {
             var csvConverter = new CsvConverter(data);
             csvConverter.downloadCsv();
         });

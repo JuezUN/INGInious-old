@@ -132,11 +132,30 @@
         };
 
         GradeDistributionStatistic.prototype._fetchData = function() {
-            return $.get('/api/stats/admin/grade_distribution', {course_id: courseId}, null, "json");
+            return $.get('/api/stats/admin/grade_distribution', {course_id: adminStatistics.courseId}, null, "json");
         };
 
         return GradeDistributionStatistic;
     })();
+
+    GradeDistributionStatistic.prototype._fetchData = function() {
+        return $.get('/api/stats/admin/grade_distribution', {course_id: adminStatistics.courseId}, null, "json");
+    };
+
+    GradeDistributionStatistic.prototype._fetchCsvData = function() {
+        return this._fetchAndCacheData().then(function(data) {
+            // Unwrap each grade so the CSV is properly generated.
+            return _.flatMap(data, function(taskElement) {
+                return _.map(taskElement.grades, function(grade) {
+                    return {
+                        task_id: taskElement.task_id,
+                        task_name: taskElement.task_name,
+                        grade: grade
+                    };
+                });
+            });
+        });
+    };
 
     var GradeCountStatistic = (function() {
         function GradeCountStatistic(containerId) {
@@ -187,7 +206,7 @@
         };
 
         GradeCountStatistic.prototype._fetchData = function() {
-            return $.get('/api/stats/admin/grade_count', {course_id: courseId}, null, "json");
+            return $.get('/api/stats/admin/grade_count', {course_id: adminStatistics.courseId}, null, "json");
         };
 
         return GradeCountStatistic;
@@ -212,7 +231,7 @@
         };
 
         SubmissionsVerdictStatistic.prototype._fetchData = function() {
-            return $.get('/api/stats/admin/submissions_verdict', {course_id: courseId}, null, "json");
+            return $.get('/api/stats/admin/submissions_verdict', {course_id: adminStatistics.courseId}, null, "json");
         };
         
         SubmissionsVerdictStatistic.prototype.toggleNormalize = function(){
@@ -222,6 +241,27 @@
 
         return SubmissionsVerdictStatistic ;
     })();
+
+    GradeCountStatistic.prototype._fetchData = function() {
+        return $.get('/api/stats/admin/grade_count', {course_id: adminStatistics.courseId}, null, "json");
+    };
+
+    GradeCountStatistic.prototype._fetchCsvData = function() {
+        return this._fetchAndCacheData().then(function(data) {
+            // Unwrap each grade so the CSV is properly generated.
+            return _.flatMap(data, function(taskElement) {
+                return _.map(taskElement.grades, function(gradeElement) {
+                    return {
+                        task_id: taskElement.task_id,
+                        task_name: taskElement.task_name,
+                        grade: gradeElement.grade,
+                        count: gradeElement.count
+                    };
+                });
+            });
+        });
+    };
+
 
     var BestSubmissionsVerdictStatistic = (function() {
         function BestSubmissionsVerdictStatistic (containerId) {
@@ -241,7 +281,7 @@
         };
 
         BestSubmissionsVerdictStatistic.prototype._fetchData = function() {
-            return $.get('/api/stats/admin/best_submissions_verdict', {course_id: courseId}, null, "json");
+            return $.get('/api/stats/admin/best_submissions_verdict', {course_id: adminStatistics.courseId}, null, "json");
         };
 
         BestSubmissionsVerdictStatistic.prototype.toggleNormalize = function(){
@@ -301,7 +341,7 @@
         };
 
         GradeCountStatistic.prototype._fetchData = function() {
-            return $.get('/api/stats/admin/grade_count', {course_id: courseId}, null, "json");
+            return $.get('/api/stats/admin/grade_count', {course_id: adminStatistics.courseId}, null, "json");
         };
 
         return GradeCountStatistic;
