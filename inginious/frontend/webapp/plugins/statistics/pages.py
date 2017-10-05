@@ -51,7 +51,7 @@ class UserStatisticsPage(INGIniousAuthPage):
         )
 
 
-class UserStatisticsAPI(APIAuthenticatedPage):
+class UserStatisticsApi(APIAuthenticatedPage):
     def API_GET(self):
         self.validate_parameters()
         return self.statistics()
@@ -75,7 +75,7 @@ class UserStatisticsAPI(APIAuthenticatedPage):
         return "[]"
 
 
-class TrialsAndBestGrade(UserStatisticsAPI):
+class TrialsAndBestGradeApi(UserStatisticsApi):
     def statistics(self):
         username = self.user_manager.session_username()
         course_id = web.input().course_id
@@ -131,7 +131,7 @@ class TrialsAndBestGrade(UserStatisticsAPI):
         return 200, list(best_submissions)
 
 
-class BarSubmissionsPerTasks(UserStatisticsAPI):
+class BarSubmissionsPerTasksApi(UserStatisticsApi):
     def statistics(self):
         username = self.user_manager.session_username()
         course_id = web.input().course_id
