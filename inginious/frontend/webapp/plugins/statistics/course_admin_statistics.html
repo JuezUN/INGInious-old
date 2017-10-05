@@ -1,0 +1,47 @@
+$def with (course)
+
+$var title: $:course.get_name() - Statistics
+
+$def NavbarF():
+    <ol class="nav navbar-nav nav-breadcrumb">
+      <li><a href="$get_homepath()/course/$course.get_id()">$course.get_name()</a></li>
+      <li class="active"><a href="#">Course statistics <span class="sr-only">(current)</span></a></li>
+    </ol>
+
+$var Navbar: $:NavbarF()
+
+<h3>Statistics for course: $:course.get_name()</h3>
+
+<div>
+
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active">
+            <a href="#gradeCount" aria-controls="gradeCount" role="tab" data-toggle="tab">Grade count</a>
+        </li>
+        <li role="presentation">
+            <a href="#gradeDistribution" aria-controls="gradeDistribution" role="tab" data-toggle="tab">Grade distribution</a>
+        </li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="gradeCount">
+            <h4>Submissions by grade</h4>
+            <div id="statisticsGradeDiv" class="statistics-grade"></div>
+            <button type="button" class="btn btn-link" onclick="gradeCountStatistic.downloadCsvAsync()">Download CSV</button>
+        </div>
+        <div role="tabpanel" class="tab-pane" id="gradeDistribution">
+            <h4>Final grade distribution</h4>
+            <div id="statisticsGradeDistributionDiv" class="statistics-grade"></div>
+            <button type="button" class="btn btn-link" onclick="gradeDistributionStatistic.downloadCsvAsync()">Download CSV</button>
+        </div>
+    </div>
+
+</div>
+
+<script type="text/javascript">
+    var adminStatistics = {
+        courseId: "$:course.get_id()"
+    };
+</script>

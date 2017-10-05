@@ -14,3 +14,7 @@
     height: 500px;
     width: 100%;
 }
+
+.statistics-grade {
+  max-width: 100%;
+}
