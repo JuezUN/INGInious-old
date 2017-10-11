@@ -287,7 +287,7 @@
                         var row = $("<tr/>");
                         var entry = result[i];
 
-                        var cells = [entry.username, entry.grade, entry.submissionid];
+                        var cells = [entry.username, entry.grade];
 
                         for(var j = 0; j < cells.length; ++j) {
                             var cell = $("<td/>");
@@ -295,10 +295,22 @@
                             row.append(cell);
                         }
 
-                        row.click(function() {
-                            window.location = createSubmissionLink(adminStatistics.courseId, entry.username,
-                                taskId, entry.submissionid);
-                        });
+                        var submissionCell = $("<td/>");
+                        var submissionId = entry.submissionid;
+
+                        if (submissionId) {
+                            var submissionLink = $("<a>", {
+                                text: submissionId,
+                                href: createSubmissionLink(adminStatistics.courseId, entry.username,
+                                    taskId, submissionId)
+                            });
+
+                            submissionCell.append(submissionLink);
+                        } else {
+                            submissionCell.text('No submission available');
+                        }
+
+                        row.append(submissionCell);
 
                         tableBody.append(row);
                     }

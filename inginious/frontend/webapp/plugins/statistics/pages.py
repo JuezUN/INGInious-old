@@ -428,7 +428,7 @@ class GradeCountStatisticsDetailApi(StatisticsAdminApi):
         return [{
             "grade": s["grade"],
             "username": s["username"],
-            "submissionid": str(s["submissionid"])
+            "submissionid": str(s["submissionid"]) if s["submissionid"] else None
         } for s in submissions]
 
     def API_GET(self):
