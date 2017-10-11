@@ -433,7 +433,8 @@ class GradeCountStatisticsDetailApi(StatisticsAdminApi):
             {
                 "$unwind":
                     {
-                        "path": "$submission"
+                        "path": "$submission",
+                        "preserveNullAndEmptyArrays": True
                     }
             },
             {
@@ -459,6 +460,47 @@ class GradeCountStatisticsDetailApi(StatisticsAdminApi):
 
         return 200, submissions
 
+
+class GradeDistributionStatisticsDetailApi(StatisticsAdminApi):
+    def _compute_details(self, course_id, task_id):
+        user_tasks = self.database.user_tasks.aggregate([
+            {"$match": {"$and": [{"courseid": course_id}, {"taskid": task_id}]}},
+            {
+                "$lookup": {
+                    "from": "submissions",
+                    "localField": "submissionid",
+                    "foreignField": "_id",
+                    "as": "submission"
+                }
+            },
+            {
+                "$unwind":
+                    {
+                        "path": "$submission",
+                        "preserveNullAndEmptyArrays": True
+                    }
+            },
+            {
+                "$sort": collections.OrderedDict([
+                    ("submission.submitted_on", -1),
+                    ("username", 1)
+                ])
+            }
+        ])
+
+        return project_detail_user_tasks(user_tasks)
+
+    def API_GET(self):
+        parameters = web.input()
+
+        course_id = self.get_mandatory_parameter(parameters, 'course_id')
+        self.get_course_and_check_rights(course_id)
+
+        task_id = self.get_mandatory_parameter(parameters, 'task_id')
+
+        submissions = self._compute_details(course_id, task_id)
+
+        return 200, submissions
 
 class GradeDistributionStatisticsApi(StatisticsAdminApi):
     def _compute_grade_distribution_statistics(self, course_id):

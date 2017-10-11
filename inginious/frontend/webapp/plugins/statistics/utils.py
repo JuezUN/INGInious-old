@@ -47,7 +47,7 @@ def project_detail_user_tasks(user_tasks):
     return [{
         "grade": s["grade"],
         "username": s["username"],
-        "submission": project_submission(s["submission"])
+        "submission": project_submission(s.get("submission", None))
     } for s in user_tasks]
 
 

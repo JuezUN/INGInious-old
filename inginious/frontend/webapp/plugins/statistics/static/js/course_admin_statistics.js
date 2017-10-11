@@ -109,6 +109,7 @@
             var plotData = _.map(data, function(item) {
                 return {
                     y: item.grades,
+                    taskId: item.task_id,
                     name: item.task_name,
                     boxmean: true,
                     type: 'box',
@@ -129,6 +130,21 @@
             };
 
             Plotly.newPlot(this.containerId, plotData, layout);
+
+            var container = $("#" + this.containerId);
+
+            container.unbind('plotly_click');
+            container[0].on('plotly_click', function(data) {
+                var point = data.points[0];
+                var taskId = point.data.taskId;
+
+                $.get('/api/stats/admin/grade_distribution_details', {
+                    course_id: adminStatistics.courseId,
+                    task_id: taskId
+                }, function(result) {
+                    generateSubmissionTable("statisticsGradeDistributionTable", result);
+                }, "json");
+            });
         };
 
         GradeDistributionStatistic.prototype._fetchData = function() {
@@ -265,16 +281,16 @@
 
             Plotly.newPlot(this.containerId, [plotData], layout);
 
-            var statisticsGradeDiv = $("#statisticsGradeDiv");
+            var container = $("#" + this.containerId);
 
-            statisticsGradeDiv.unbind('plotly_click');
-            statisticsGradeDiv[0].on('plotly_click', function(data) {
+            container.unbind('plotly_click');
+            container[0].on('plotly_click', function(data) {
                 var point = data.points[0];
                 var pointNumber = point.pointNumber;
                 var taskId = point.data.taskIds[pointNumber];
                 var grade = point.y;
 
-                $.get('/api/stats/admin/grade_count_submissions', {
+                $.get('/api/stats/admin/grade_count_details', {
                     course_id: adminStatistics.courseId,
                     task_id: taskId,
                     grade: grade
