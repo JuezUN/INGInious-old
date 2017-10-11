@@ -10,7 +10,7 @@ from inginious.frontend.webapp.pages.utils import INGIniousAuthPage, INGIniousPa
 from inginious.frontend.webapp.pages.course_admin.utils import INGIniousAdminPage
 from inginious.common.filesystems.local import LocalFSProvider
 from inginious.common.course_factory import CourseNotFoundException, CourseUnreadableException, InvalidNameException
-from .utils import convert_task_dict_to_sorted_list
+from .utils import convert_task_dict_to_sorted_list, project_detail_user_tasks
 
 
 _BASE_RENDERER_PATH = 'frontend/webapp/plugins/statistics'
@@ -419,17 +419,32 @@ class GradeCountStatisticsApi(StatisticsAdminApi):
 
 class GradeCountStatisticsDetailApi(StatisticsAdminApi):
     def _compute_details(self, course_id, grade, task_id):
-        submissions = self.database.user_tasks.find(
-            {"$and": [{"courseid": course_id}, {"taskid": task_id}, {"grade": {"$lte": grade}},
-                      {"grade": {"$gt": grade - 1}}]},
-            {"grade": 1, "username": 1, "submissionid": 1}
-        )
+        user_tasks = self.database.user_tasks.aggregate([
+            {"$match": {"$and": [{"courseid": course_id}, {"taskid": task_id}, {"grade": {"$lte": grade}},
+                                 {"grade": {"$gt": grade - 1}}]}},
+            {
+                "$lookup": {
+                    "from": "submissions",
+                    "localField": "submissionid",
+                    "foreignField": "_id",
+                    "as": "submission"
+                }
+            },
+            {
+                "$unwind":
+                    {
+                        "path": "$submission"
+                    }
+            },
+            {
+                "$sort": collections.OrderedDict([
+                    ("submission.submitted_on", -1),
+                    ("username", 1)
+                ])
+            }
+        ])
 
-        return [{
-            "grade": s["grade"],
-            "username": s["username"],
-            "submissionid": str(s["submissionid"]) if s["submissionid"] else None
-        } for s in submissions]
+        return project_detail_user_tasks(user_tasks)
 
     def API_GET(self):
         parameters = web.input()

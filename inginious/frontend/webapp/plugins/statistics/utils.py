@@ -41,3 +41,26 @@ def convert_task_dict_to_sorted_list(course, task_dict, key_name, include_task_i
     return [
         generate_task_element(task) for task in sorted_tasks if include_all_tasks or task.get_id() in task_dict
     ]
+
+
+def project_detail_user_tasks(user_tasks):
+    return [{
+        "grade": s["grade"],
+        "username": s["username"],
+        "submission": project_submission(s["submission"])
+    } for s in user_tasks]
+
+
+def project_submission(submission):
+    if submission is None:
+        return None
+
+    return {
+        "id": str(submission["_id"]),
+        "submitted_on": submission["submitted_on"].isoformat(),
+        "taskId": submission["taskid"],
+        "status": submission["status"],
+        "result": submission["result"],
+        "grade": submission["grade"],
+        "summary_result": submission.get("custom", {}).get("summary_result", None)
+    }

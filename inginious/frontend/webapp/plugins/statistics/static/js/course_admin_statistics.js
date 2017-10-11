@@ -279,41 +279,7 @@
                     task_id: taskId,
                     grade: grade
                 }, function(result) {
-                    var tableBody = $("#statisticsGradeTableBody");
-
-                    tableBody.empty();
-
-                    for(var i = 0; i < result.length; ++i) {
-                        var row = $("<tr/>");
-                        var entry = result[i];
-
-                        var cells = [entry.username, entry.grade];
-
-                        for(var j = 0; j < cells.length; ++j) {
-                            var cell = $("<td/>");
-                            cell.text(cells[j]);
-                            row.append(cell);
-                        }
-
-                        var submissionCell = $("<td/>");
-                        var submissionId = entry.submissionid;
-
-                        if (submissionId) {
-                            var submissionLink = $("<a>", {
-                                text: submissionId,
-                                href: createSubmissionLink(adminStatistics.courseId, entry.username,
-                                    taskId, submissionId)
-                            });
-
-                            submissionCell.append(submissionLink);
-                        } else {
-                            submissionCell.text('No submission available');
-                        }
-
-                        row.append(submissionCell);
-
-                        tableBody.append(row);
-                    }
+                    generateSubmissionTable("statisticsGradeTable", result);
                 }, "json");
             });
         };
