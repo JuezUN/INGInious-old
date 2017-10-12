@@ -34,8 +34,28 @@
       return plotData;
     }
 
+    function get_api_url(id_div){
+        var api_path_best_submissions = '/api/stats/admin/best_submissions_verdict_details';
+        var api_path_submissions = '/api/stats/admin/submissions_verdict_details'
+        if(id_div === 'submissionsVerdictDiv')
+            return api_path_submissions;
+        else
+            return api_path_best_submissions;
+    }
+
+    function get_table_id(id_div){
+        var table_name_best_submissions = 'bestSubmissionsVerdictTable';
+        var table_name_submissions = 'submissionsVerdictTable';
+        if(id_div === 'submissionsVerdictDiv')
+            return table_name_submissions;
+        else
+            return table_name_best_submissions;
+    }
+
     function plotVerdictStatisticsChart(id_div, data, statistic_title, normalized) {
 
+      var api_url = get_api_url(id_div);
+      var table_id = get_table_id(id_div);
       var data_count_obj = {};
 
       var yLabel = normalized ? "Percentage of tasks" : "Number of tasks";
@@ -48,6 +68,8 @@
         }
         data_count_obj[data[i].task_id] += data[i].count;
       }
+
+
 
       var get_function = normalized ? getDataNormalized : getData;
 
@@ -66,22 +88,20 @@
       var accepted_data = createObjectToPlotData(data, data_count_obj,
       "ACCEPTED", COLOR_ACCEPTED, get_function);
 
-
-
-      var data = [compilation_error_data, time_limit_data, memory_limit_data,
+      var plotData = [compilation_error_data, time_limit_data, memory_limit_data,
       runtime_error_data, wrong_answer_data, internal_error_data, accepted_data];
 
       var layout = {
         barmode: 'stack',
         title: statistic_title,
+        hovermode: 'closest',
         xaxis: {
           title: 'Tasks',
           categoryorder : "array",
           categoryarray : tasks_ids,
           titlefont:{
             size: 16,
-            color: COLOR_LABEL,
-
+            color: COLOR_LABEL
           }
         },
         yaxis: {
@@ -94,7 +114,29 @@
       };
 
       Plotly.purge(id_div);
-      Plotly.newPlot(id_div, data, layout);
+      Plotly.newPlot(id_div, plotData, layout);
+
+      var container = $("#" + id_div);
+
+
+      container.unbind('plotly_click');
+      container[0].on('plotly_click', function(data){
+          var point = data.points[0];
+          var pointNumber = point.pointNumber;
+          var taskId = point.data.x[pointNumber];
+          var summaryResult = point.data.name;
+          $.get(api_url, {
+              course_id: adminStatistics.courseId,
+              task_id: taskId,
+              summary_result: summaryResult
+          }, function(result){
+              if(table_id === 'submissionsVerdictTable')
+                  generateVerdictSubmissionTable(table_id, result);
+              else
+                  generateSubmissionTable(table_id, result);
+          }, "json");
+      });
+
     }
 
     var GradeDistributionStatistic = (function() {
