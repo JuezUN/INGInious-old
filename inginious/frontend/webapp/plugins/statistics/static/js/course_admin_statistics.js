@@ -138,12 +138,20 @@
                 var point = data.points[0];
                 var taskId = point.data.taskId;
 
+                var errorContainer = $("#plotErrorContainer");
+                errorContainer.empty();
+
                 $.get('/api/stats/admin/grade_distribution_details', {
                     course_id: adminStatistics.courseId,
                     task_id: taskId
                 }, function(result) {
                     generateSubmissionTable("statisticsGradeDistributionTable", result);
-                }, "json");
+                }, "json").fail(function() {
+                    var alertHtml = '<div class="alert alert-danger alert-dismissible" role="alert">' +
+                        '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
+                        'Something went wrong while fetching the submission list. Try again later.</div>';
+                    errorContainer.html(alertHtml);
+                });;
             });
         };
 
@@ -290,13 +298,21 @@
                 var taskId = point.data.taskIds[pointNumber];
                 var grade = point.y;
 
+                var errorContainer = $("#plotErrorContainer");
+                errorContainer.empty();
+
                 $.get('/api/stats/admin/grade_count_details', {
                     course_id: adminStatistics.courseId,
                     task_id: taskId,
                     grade: grade
                 }, function(result) {
                     generateSubmissionTable("statisticsGradeTable", result);
-                }, "json");
+                }, "json").fail(function() {
+                    var alertHtml = '<div class="alert alert-danger alert-dismissible" role="alert">' +
+                        '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
+                        'Something went wrong while fetching the submission list. Try again later.</div>';
+                    errorContainer.html(alertHtml);
+                });
             });
         };
 
