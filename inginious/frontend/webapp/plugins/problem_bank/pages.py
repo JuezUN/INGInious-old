@@ -2,12 +2,12 @@ import web
 
 import inginious.frontend.webapp.pages.api._api_page as api
 from inginious.frontend.webapp.plugins.utils import AdminApi
-from inginious.common.exceptions import TaskNotFoundException
+from inginious.common.exceptions import TaskNotFoundException, InvalidNameException
 from inginious.common.course_factory import CourseNotFoundException, CourseUnreadableException, InvalidNameException
 from inginious.common.filesystems.provider import NotFoundException
 
 class CopyTaskApi(AdminApi):
-    def API_GET(self):
+    def API_POST(self):
         parameters = web.input()
         target_id = self.get_mandatory_parameter(parameters, "target_id")
         bank_id = self.get_mandatory_parameter(parameters, "bank_id")
@@ -24,7 +24,7 @@ class CopyTaskApi(AdminApi):
 
         try:
             task = bank_course.get_task(task_id)
-        except TaskNotFoundException:
+        except (TaskNotFoundException, InvalidNameException):
             raise api.APIError(400, {"error": "Invalid task"})
 
         target_fs = self.course_factory.get_course_fs(target_id)
