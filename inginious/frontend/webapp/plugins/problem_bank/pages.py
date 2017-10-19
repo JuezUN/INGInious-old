@@ -14,6 +14,9 @@ class ManageBanksCoursesApi(AdminApi):
     def already_bank(self, course_id):
         return self.database.problem_banks.find({"courseid": {"$eq": course_id}}).count() != 0
 
+    def API_GET(self):
+        return 200, [bank_id["courseid"] for bank_id in self.database.problem_banks.find()]
+
     def API_POST(self):
         course_id = self.get_course_id()
         if not self.already_bank(course_id):
