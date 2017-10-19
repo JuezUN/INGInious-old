@@ -10,8 +10,7 @@ from inginious.frontend.webapp.pages.utils import INGIniousAuthPage, INGIniousPa
 from inginious.frontend.webapp.pages.course_admin.utils import INGIniousAdminPage
 from inginious.common.filesystems.local import LocalFSProvider
 from inginious.common.course_factory import CourseNotFoundException, CourseUnreadableException, InvalidNameException
-from .utils import convert_task_dict_to_sorted_list, project_detail_user_tasks
-
+from .utils import convert_task_dict_to_sorted_list, project_detail_user_tasks, task_submissions_detail
 
 _BASE_RENDERER_PATH = 'frontend/webapp/plugins/statistics'
 _BASE_STATIC_FOLDER = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
@@ -457,6 +456,102 @@ class GradeCountStatisticsDetailApi(StatisticsAdminApi):
         task_id = self.get_mandatory_parameter(parameters, 'task_id')
 
         submissions = self._compute_details(course_id, grade, task_id)
+
+        return 200, submissions
+
+
+class SubmissionsByVerdictStatisticsDetailApi(StatisticsAdminApi):
+
+    def _compute_details(self, course_id, task_id, summary_result):
+        submissions = self.database.submissions.aggregate([
+            {"$match":
+                {
+                    "courseid": course_id,
+                    "custom.summary_result": summary_result,
+                    "taskid" : task_id
+                }
+            },
+            {"$unwind":
+                {
+                    "path": "$username",
+                    "preserveNullAndEmptyArrays": True
+                }
+            },
+            {
+                "$sort": collections.OrderedDict([
+                    ("submitted_on", -1),
+                    ("username", 1)
+                ])
+            }
+        ])
+
+        return task_submissions_detail(submissions)
+
+    def API_GET(self):
+        parameters = web.input()
+        course_id = self.get_mandatory_parameter(parameters, 'course_id')
+        self.get_course_and_check_rights(course_id)
+
+        task_id = self.get_mandatory_parameter(parameters, 'task_id')
+        summary_result = self.get_mandatory_parameter(parameters, 'summary_result')
+
+        submissions = self._compute_details(course_id, task_id, summary_result)
+
+        return 200, submissions
+
+
+class BestSubmissionsByVerdictStatisticsDetailApi(StatisticsAdminApi):
+
+    def _compute_details(self, course_id, task_id, summary_result):
+        user_tasks = self.database.user_tasks.aggregate([
+            {"$match":
+                {
+                  "$and": [
+                           {"courseid": course_id},
+                           {"taskid": task_id},
+                          ]
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "submissions",
+                    "localField": "submissionid",
+                    "foreignField": "_id",
+                    "as": "submission"
+                }
+            },
+            {
+                "$unwind":
+                    {
+                        "path": "$submission",
+                        "preserveNullAndEmptyArrays": True
+                    }
+            },
+            {
+              "$match":
+              {
+                "submission.custom.summary_result": summary_result
+              }
+            },
+            {
+                "$sort": collections.OrderedDict([
+                    ("submission.submitted_on", -1),
+                    ("username", 1)
+                ])
+            }
+        ])
+        return project_detail_user_tasks(user_tasks)
+
+
+    def API_GET(self):
+        parameters = web.input()
+        course_id = self.get_mandatory_parameter(parameters, 'course_id')
+        self.get_course_and_check_rights(course_id)
+
+        task_id = self.get_mandatory_parameter(parameters, 'task_id')
+        summary_result = self.get_mandatory_parameter(parameters, 'summary_result')
+
+        submissions = self._compute_details(course_id, task_id, summary_result)
 
         return 200, submissions
 

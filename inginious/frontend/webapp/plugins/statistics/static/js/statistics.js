@@ -73,6 +73,46 @@ function createSubmissionLink(courseId, userName, taskId, submissionId) {
     });
 }
 
+function generateVerdictSubmissionTable(tableId, submissions){
+    var table = $("#" + tableId);
+
+    table.html("<thead><tr><th>Username</th><th>Grade</th><th>Status</th><th>Summary result</th><th>Submitted on</th><th>Submission</th></tr></thead>");
+    var tableBody = $("<tbody/>");
+
+    for(var i = 0; i < submissions.length; ++i) {
+        var row = $("<tr/>");
+        var entry = submissions[i];
+
+        var cells = [entry.username, entry.grade, entry.status || '-', entry.summary_result || '-',
+            entry.submitted_on || '-'];
+
+        for(var j = 0; j < cells.length; ++j) {
+            var cell = $("<td/>");
+            cell.text(cells[j]);
+            row.append(cell);
+        }
+
+        var submissionCell = $("<td/>");
+        if (entry.id) {
+            var submissionLink = $("<a>", {
+                text: entry.id,
+                href: createSubmissionLink(adminStatistics.courseId, entry.username,
+                    entry.taskId, entry.id)
+            });
+
+            submissionCell.append(submissionLink);
+        } else {
+            submissionCell.text('No submission available');
+        }
+
+        row.append(submissionCell);
+
+        tableBody.append(row);
+    }
+
+    table.append(tableBody);
+}
+
 function generateSubmissionTable(tableId, userTasks) {
     var table = $("#" + tableId);
 
