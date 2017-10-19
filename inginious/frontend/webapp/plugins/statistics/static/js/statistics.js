@@ -61,3 +61,63 @@ var Statistic = (function () {
 
     return Statistic;
 })();
+
+function createSubmissionLink(courseId, userName, taskId, submissionId) {
+    var urlTemplate = _.template("/admin/${ courseId }/student/${ userName }/${ taskId }/${ submissionId }");
+
+    return urlTemplate({
+        courseId: courseId,
+        userName: userName,
+        taskId: taskId,
+        submissionId: submissionId
+    });
+}
+
+function generateSubmissionTable(tableId, userTasks) {
+    var table = $("#" + tableId);
+
+    table.html("<thead><tr><th>Username</th><th>Grade</th><th>Status</th><th>Summary result</th><th>Submitted on</th><th>Submission</th></tr></thead>");
+    var tableBody = $("<tbody/>");
+
+    for(var i = 0; i < userTasks.length; ++i) {
+        var row = $("<tr/>");
+        var entry = userTasks[i];
+        var submission = entry.submission || {};
+
+        var cells = [entry.username, entry.grade, submission.status || '-', submission.summary_result || '-',
+            submission.submitted_on || '-'];
+
+        for(var j = 0; j < cells.length; ++j) {
+            var cell = $("<td/>");
+            cell.text(cells[j]);
+            row.append(cell);
+        }
+
+        var submissionCell = $("<td/>");
+        if (submission.id) {
+            var submissionLink = $("<a>", {
+                text: submission.id,
+                href: createSubmissionLink(adminStatistics.courseId, entry.username,
+                    submission.taskId, submission.id)
+            });
+
+            submissionCell.append(submissionLink);
+        } else {
+            submissionCell.text('No submission available');
+        }
+
+        row.append(submissionCell);
+
+        tableBody.append(row);
+    }
+
+    table.append(tableBody);
+}
+
+function createAlertHtml(alertClass, content) {
+    var alertHtml = '<div class="alert ' + alertClass + ' alert-dismissible" role="alert">' +
+        '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
+        content + '</div>';
+
+    return alertHtml;
+}

@@ -13,6 +13,8 @@ $var Navbar: $:NavbarF()
 <h3>Statistics for course: $:course.get_name()</h3>
 
 <div>
+    <div id="plotErrorContainer"></div>
+
     <!-- Nav tabs -->
     <ul class="nav nav-tabs" role="tablist">
         <li role="presentation" class="active">
@@ -35,11 +37,15 @@ $var Navbar: $:NavbarF()
             <h4>Submissions by grade</h4>
             <div id="statisticsGradeDiv" class="statistics-grade"></div>
             <button type="button" class="btn btn-link" onclick="gradeCountStatistic.downloadCsvAsync()">Download CSV</button>
+
+            <table class="table table-hover" id="statisticsGradeTable"></table>
         </div>
         <div role="tabpanel" class="tab-pane" id="gradeDistribution">
             <h4>Final grade distribution</h4>
             <div id="statisticsGradeDistributionDiv" class="statistics-grade"></div>
             <button type="button" class="btn btn-link" onclick="gradeDistributionStatistic.downloadCsvAsync()">Download CSV</button>
+
+            <table class="table table-hover" id="statisticsGradeDistributionTable"></table>
         </div>
         <div role="tabpanel" class="tab-pane" id="submissionsVerdict">
             <h4>Submissions Verdict (ALL)</h4>
