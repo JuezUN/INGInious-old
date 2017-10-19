@@ -69,8 +69,6 @@
         data_count_obj[data[i].task_id] += data[i].count;
       }
 
-
-
       var get_function = normalized ? getDataNormalized : getData;
 
       var compilation_error_data = createObjectToPlotData(data, data_count_obj,
