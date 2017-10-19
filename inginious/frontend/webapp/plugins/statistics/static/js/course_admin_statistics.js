@@ -37,7 +37,7 @@
       return plotData;
     }
 
-    function plotVerdictStatisticsChart(id_div, data, statistic_title, normalized, api_url, generateTable, table_id) {
+    function plotVerdictStatisticsChart(id_div, data, statistic_title, normalized, api_url, generateTable) {
 
       var data_count_obj = {};
 
@@ -111,9 +111,10 @@
               course_id: adminStatistics.courseId,
               task_id: taskId,
               summary_result: summaryResult
-          }, function(result){
-                  generateTable(table_id, result);
-          }, "json");
+          }, generateTable, "json").fail(function(){
+              errorContainer.html(createAlertHtml("alert-danger",
+                  "Something went wrong while fetching the submission list. Try again later."));
+          });
       });
 
     }
@@ -219,7 +220,9 @@
 
 
               plotVerdictStatisticsChart(this.containerId, data,title,
-                  this.toggle_normalize_submissions_per_tasks, api_url, tableGenerator, table_id);
+                  this.toggle_normalize_submissions_per_tasks, api_url, function(result){
+                    tableGenerator(table_id, result);
+                  });
 
         };
 
@@ -252,7 +255,9 @@
               var table_id = "bestSubmissionsVerdictTable";
 
               plotVerdictStatisticsChart(this.containerId, data, title,
-                  this.toggle_normalize_best_submissions_per_tasks, api_url, tableGenerator, table_id);
+                  this.toggle_normalize_best_submissions_per_tasks, api_url, function(result){
+                    tableGenerator(table_id, result);
+                  });
 
         };
 
