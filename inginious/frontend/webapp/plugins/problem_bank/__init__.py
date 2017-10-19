@@ -10,3 +10,5 @@ def init(plugin_manager, course_factory, client, config):
     plugin_manager.add_page(r'/api/copy_task', pages.CopyTaskApi)
     plugin_manager.add_page(r'/api/manage_banks_courses', pages.ManageBanksCoursesApi)
 
+    if "problem_banks" not in plugin_manager.get_database().collection_names():
+        plugin_manager.get_database().create_collection("problem_banks")
