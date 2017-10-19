@@ -6,6 +6,9 @@
     var COLOR_INTERNAL_ERROR = 'rgb(137,139,37)';
     var COLOR_ACCEPTED = 'rgb(35,181,100)';
     var COLOR_LABEL = 'rgb(107, 107, 107)';
+
+    var errorContainer = $("#plotErrorContainer");
+
     function getDataNormalized(data_entry, data_count_obj){
         return data_entry.count/data_count_obj[data_entry.task_id]*100;
     }
@@ -65,8 +68,6 @@
       "INTERNAL_ERROR", COLOR_INTERNAL_ERROR, get_function);
       var accepted_data = createObjectToPlotData(data, data_count_obj,
       "ACCEPTED", COLOR_ACCEPTED, get_function);
-
-
 
       var data = [compilation_error_data, time_limit_data, memory_limit_data,
       runtime_error_data, wrong_answer_data, internal_error_data, accepted_data];
@@ -138,7 +139,6 @@
                 var point = data.points[0];
                 var taskId = point.data.taskId;
 
-                var errorContainer = $("#plotErrorContainer");
                 errorContainer.empty();
 
                 $.get('/api/stats/admin/grade_distribution_details', {
@@ -147,10 +147,7 @@
                 }, function(result) {
                     generateSubmissionTable("statisticsGradeDistributionTable", result);
                 }, "json").fail(function() {
-                    var alertHtml = '<div class="alert alert-danger alert-dismissible" role="alert">' +
-                        '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
-                        'Something went wrong while fetching the submission list. Try again later.</div>';
-                    errorContainer.html(alertHtml);
+                    errorContainer.html(createAlertHtml("alert-danger", "Something went wrong while fetching the submission list. Try again later."));
                 });;
             });
         };
@@ -298,7 +295,6 @@
                 var taskId = point.data.taskIds[pointNumber];
                 var grade = point.y;
 
-                var errorContainer = $("#plotErrorContainer");
                 errorContainer.empty();
 
                 $.get('/api/stats/admin/grade_count_details', {
@@ -308,10 +304,7 @@
                 }, function(result) {
                     generateSubmissionTable("statisticsGradeTable", result);
                 }, "json").fail(function() {
-                    var alertHtml = '<div class="alert alert-danger alert-dismissible" role="alert">' +
-                        '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
-                        'Something went wrong while fetching the submission list. Try again later.</div>';
-                    errorContainer.html(alertHtml);
+                    errorContainer.html(createAlertHtml("alert-danger", "Something went wrong while fetching the submission list. Try again later."));
                 });
             });
         };
