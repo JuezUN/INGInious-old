@@ -37,28 +37,8 @@
       return plotData;
     }
 
-    function get_api_url(id_div){
-        var api_path_best_submissions = '/api/stats/admin/best_submissions_verdict_details';
-        var api_path_submissions = '/api/stats/admin/submissions_verdict_details'
-        if(id_div === 'submissionsVerdictDiv')
-            return api_path_submissions;
-        else
-            return api_path_best_submissions;
-    }
+    function plotVerdictStatisticsChart(id_div, data, statistic_title, normalized, api_url, generateTable, table_id) {
 
-    function get_table_id(id_div){
-        var table_name_best_submissions = 'bestSubmissionsVerdictTable';
-        var table_name_submissions = 'submissionsVerdictTable';
-        if(id_div === 'submissionsVerdictDiv')
-            return table_name_submissions;
-        else
-            return table_name_best_submissions;
-    }
-
-    function plotVerdictStatisticsChart(id_div, data, statistic_title, normalized) {
-
-      var api_url = get_api_url(id_div);
-      var table_id = get_table_id(id_div);
       var data_count_obj = {};
 
       var yLabel = normalized ? "Percentage of tasks" : "Number of tasks";
@@ -88,7 +68,7 @@
       "INTERNAL_ERROR", COLOR_INTERNAL_ERROR, get_function);
       var accepted_data = createObjectToPlotData(data, data_count_obj,
       "ACCEPTED", COLOR_ACCEPTED, get_function);
-        
+
       var plotData = [compilation_error_data, time_limit_data, memory_limit_data,
 
       runtime_error_data, wrong_answer_data, internal_error_data, accepted_data];
@@ -132,10 +112,7 @@
               task_id: taskId,
               summary_result: summaryResult
           }, function(result){
-              if(table_id === 'submissionsVerdictTable')
-                  generateVerdictSubmissionTable(table_id, result);
-              else
-                  generateSubmissionTable(table_id, result);
+                  generateTable(table_id, result);
           }, "json");
       });
 
@@ -234,8 +211,15 @@
 
               var title = "Submissions Vs Verdicts (ALL)";
 
+              var api_url = "/api/stats/admin/submissions_verdict_details";
 
-              plotVerdictStatisticsChart(this.containerId, data, title, this.toggle_normalize_submissions_per_tasks);
+              var tableGenerator = generateVerdictSubmissionTable;
+
+              var table_id = "submissionsVerdictTable";
+
+
+              plotVerdictStatisticsChart(this.containerId, data,title,
+                  this.toggle_normalize_submissions_per_tasks, api_url, tableGenerator, table_id);
 
         };
 
@@ -263,8 +247,12 @@
         BestSubmissionsVerdictStatistic.prototype._plotData = function(data) {
 
               var title = "Submissions Vs Verdicts (BEST)";
+              var api_url = "/api/stats/admin/best_submissions_verdict_details";
+              var tableGenerator = generateSubmissionTable;
+              var table_id = "bestSubmissionsVerdictTable";
 
-              plotVerdictStatisticsChart(this.containerId, data, title, this.toggle_normalize_best_submissions_per_tasks);
+              plotVerdictStatisticsChart(this.containerId, data, title,
+                  this.toggle_normalize_best_submissions_per_tasks, api_url, tableGenerator, table_id);
 
         };
 

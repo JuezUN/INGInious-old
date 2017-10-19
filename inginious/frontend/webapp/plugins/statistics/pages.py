@@ -500,7 +500,6 @@ class SubmissionsByVerdictStatisticsDetailApi(StatisticsAdminApi):
         return 200, submissions
 
 
-
 class BestSubmissionsByVerdictStatisticsDetailApi(StatisticsAdminApi):
 
     def _compute_details(self, course_id, task_id, summary_result):
