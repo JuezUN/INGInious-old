@@ -238,6 +238,9 @@ class CourseEditTask(INGIniousAdminPage):
                     {"status": "error", "message": "Grader output file does not exist: " + test_case["output_file"]})
 
         if data["generate_grader"]:
+            if "grader_problem_id" not in data:
+                return json.dumps({"status": "error", "message": "Grader: the problem was not specified"})
+
             if data["grader_problem_id"] not in data["problems"]:
                 return json.dumps({"status": "error", "message": "Grader: problem does not exist"})
 
