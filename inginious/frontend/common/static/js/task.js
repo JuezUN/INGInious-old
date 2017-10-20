@@ -995,7 +995,7 @@ function changeSubmissionLanguage(problemId){
     editor.updateLintStatus([]);
 }
 
-function codemirrorLanguage(backEndLanguage) {
+function convertInginiousLanguageToCodemirror(inginiousLanguage) {
     var languages = {
         "java7": "java",
         "java8": "java",
@@ -1009,7 +1009,7 @@ function codemirrorLanguage(backEndLanguage) {
         "ruby": "ruby"
     };
 
-    return languages[backEndLanguage];
+    return languages[inginiousLanguage];
 }
 
 function getLanguageForProblemId(problemId){
@@ -1017,8 +1017,8 @@ function getLanguageForProblemId(problemId){
     if(dropdown == null)
         return "plain";
 
-    var backEndLanguage = dropdown.options[dropdown.selectedIndex].value;
-    return codemirrorLanguage(backEndLanguage);
+    var inginiousLanguage = dropdown.options[dropdown.selectedIndex].value;
+    return convertInginiousLanguageToCodemirror(inginiousLanguage);
 }
 
 var PythonTutor = (function () {
