@@ -8,7 +8,6 @@ class ManageBanksCoursesApi(AdminApi):
         parameters = web.input()
         course_id = self.get_mandatory_parameter(parameters, "course_id")
         self.get_course_and_check_rights(course_id)
-
         return course_id
 
     def already_bank(self, course_id):
@@ -19,8 +18,10 @@ class ManageBanksCoursesApi(AdminApi):
 
     def API_POST(self):
         course_id = self.get_course_id()
-        if not self.already_bank(course_id):
-            self.database.problem_banks.insert_one({"courseid": course_id})
+        try:
+            self.database.problem_banks.insert({"courseid": course_id})
+        except:
+            return 200, {"message": "Course already a bank"}
 
         return 200, {"message": "Bank created successfully"}
 

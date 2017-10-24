@@ -11,3 +11,4 @@ def init(plugin_manager, course_factory, client, config):
 
     if "problem_banks" not in plugin_manager.get_database().collection_names():
         plugin_manager.get_database().create_collection("problem_banks")
+        plugin_manager.get_database().problem_banks.create_index([("courseid", 1)], unique=True)
