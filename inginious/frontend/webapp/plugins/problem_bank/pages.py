@@ -1,4 +1,5 @@
 import web
+import uuid
 
 import inginious.frontend.webapp.pages.api._api_page as api
 from inginious.frontend.webapp.plugins.utils import AdminApi
@@ -13,9 +14,12 @@ class CopyTaskApi(AdminApi):
         bank_id = self.get_mandatory_parameter(parameters, "bank_id")
         task_id = self.get_mandatory_parameter(parameters, "task_id")
 
-        copy_id = parameters["copy_id"] if ("copy_id" in parameters and parameters["copy_id"] != "") else task_id
-
         target_course = self.get_course_and_check_rights(target_id)
+        target_course_tasks_ids = [key for key in target_course.get_tasks()]
+
+        copy_id = str(uuid.uuid4())
+        while copy_id in target_course_tasks_ids:
+            copy_id = str(uuid.uuid4())
 
         try:
             bank_course = self.course_factory.get_course(bank_id)
