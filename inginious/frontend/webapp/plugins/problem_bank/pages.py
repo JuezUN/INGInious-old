@@ -1,9 +1,11 @@
 import web
 import uuid
+from pymongo.errors import DuplicateKeyError
+
 
 import inginious.frontend.webapp.pages.api._api_page as api
 from inginious.frontend.webapp.plugins.utils import AdminApi
-from inginious.common.exceptions import TaskNotFoundException, InvalidNameException
+from inginious.common.exceptions import TaskNotFoundException
 from inginious.common.course_factory import CourseNotFoundException, CourseUnreadableException, InvalidNameException
 from inginious.common.filesystems.provider import NotFoundException
 
@@ -63,7 +65,7 @@ class ManageBanksCoursesApi(AdminApi):
         course_id = self.get_course_id()
         try:
             self.database.problem_banks.insert({"courseid": course_id})
-        except:
+        except DuplicateKeyError:
             return 200, {"message": "Course already a bank"}
 
         return 200, {"message": "Bank created successfully"}
