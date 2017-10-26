@@ -59,7 +59,7 @@ class ManageBanksCoursesApi(AdminApi):
         return course_id
 
     def API_GET(self):
-        return 200, [bank_id["courseid"] for bank_id in self.database.problem_banks.find()]
+        return 200, [bank["courseid"] for bank in self.database.problem_banks.find()]
 
     def API_POST(self):
         course_id = self.get_course_id()
