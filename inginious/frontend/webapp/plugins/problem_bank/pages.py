@@ -1,5 +1,6 @@
 import web
 import uuid
+from inginious.frontend.webapp.pages.course_admin.utils import INGIniousAdminPage
 from pymongo.errors import DuplicateKeyError
 
 
@@ -9,6 +10,7 @@ from inginious.common.exceptions import TaskNotFoundException
 from inginious.common.course_factory import CourseNotFoundException, CourseUnreadableException, InvalidNameException
 from inginious.common.filesystems.provider import NotFoundException
 
+_BASE_RENDERER_PATH = 'frontend/webapp/plugins/problem_bank'
 
 class CopyTaskApi(AdminApi):
 
@@ -79,3 +81,13 @@ class ManageBanksCoursesApi(AdminApi):
             return 200, {"message": "Bank removed successfully"}
         else:
             return 404, {"message": "No bank found"}
+
+
+class BankPage(INGIniousAdminPage):
+    def GET_AUTH(self):
+        # self.template_helper.add_javascript("http://localhost:3000/static/js/bundle.js")
+        self.template_helper.add_javascript("/static/problem_bank/react/js/main.e3e6454d.js")
+
+        return (
+            self.template_helper.get_custom_renderer(_BASE_RENDERER_PATH).index()
+        )
