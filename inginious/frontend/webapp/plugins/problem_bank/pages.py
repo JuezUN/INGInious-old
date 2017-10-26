@@ -9,6 +9,10 @@ from inginious.common.filesystems.provider import NotFoundException
 
 
 class CopyTaskApi(AdminApi):
+
+    def is_a_bank(self, course_id):
+        return self.database.problem_banks.find({"courseid": {"$eq": course_id}}).count() != 0
+
     def API_POST(self):
         parameters = web.input()
         target_id = self.get_mandatory_parameter(parameters, "target_id")
@@ -25,6 +29,9 @@ class CopyTaskApi(AdminApi):
         try:
             bank_course = self.course_factory.get_course(bank_id)
         except (CourseNotFoundException, InvalidNameException, CourseUnreadableException):
+            raise api.APIError(400, {"error": "Invalid bank"})
+
+        if not self.is_a_bank(bank_id):
             raise api.APIError(400, {"error": "Invalid bank"})
 
         try:
@@ -49,9 +56,6 @@ class ManageBanksCoursesApi(AdminApi):
         self.get_course_and_check_rights(course_id)
         return course_id
 
-    def already_bank(self, course_id):
-        return self.database.problem_banks.find({"courseid": {"$eq": course_id}}).count() != 0
-
     def API_GET(self):
         return 200, [bank_id["courseid"] for bank_id in self.database.problem_banks.find()]
 
@@ -66,8 +70,10 @@ class ManageBanksCoursesApi(AdminApi):
 
     def API_DELETE(self):
         course_id = self.get_course_id()
-        if self.already_bank(course_id):
-            self.database.problem_banks.remove({"courseid": {"$eq": course_id}}, True)
+
+        rows_affected = self.database.problem_banks.remove({"courseid": {"$eq": course_id}}, True)["n"]
+
+        if rows_affected >= 1:
             return 200, {"message": "Bank removed successfully"}
         else:
             return 404, {"message": "No bank found"}
