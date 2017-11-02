@@ -22,9 +22,30 @@ class BankPage extends React.Component {
 }
 
 class BankCourse extends React.Component {
+
+    deleteCourse = () => {
+        let course_id = this.props.name
+        let updateParent = this.props.callbackParent
+
+        $.ajax({
+            url: '/plugins/problems_bank/api/bank_courses?' + $.param({"course_id": course_id}),
+            type: "DELETE",
+            success: function(data){
+                console.log(data)
+                updateParent()
+            }
+        })
+    }
+
     render() {
         return (
-            <button type="button" className="list-group-item">{this.props.name}</button>
+            <div>
+                <button type="button" className="list-group-item">{this.props.name}
+                <a class="pull-right" onClick={this.deleteCourse} >
+                    <span class="glyphicon glyphicon-remove"></span>
+                </a>
+              </button>
+            </div>
         );
     }
 }
@@ -85,7 +106,7 @@ class CourseAutosuggest extends React.Component {
                     renderSuggestion={this.renderSuggestion}
                     inputProps={inputProps}
                 />
-                <button onClick={this.addCourse}>
+                <button onClick={this.addCourse} class="btn btn-primary">
                     Add course to bank
                 </button>
             </div>
@@ -127,11 +148,12 @@ class BankCourseList extends React.Component {
 
     onChildChanged(){
         this.updateBankCoursesAsync()
+        this.updateAvailableCoursesAsync()
     }
 
     render() {
         let courses = this.state.courses.map((course, i) => {
-            return (<BankCourse name={course} key={i} />)
+            return (<BankCourse name={course} key={i} callbackParent={() => this.onChildChanged()}/>)
         });
 
         return (
