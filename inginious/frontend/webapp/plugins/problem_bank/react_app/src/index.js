@@ -59,6 +59,15 @@ class CourseAutosuggest extends React.Component {
         });
     };
 
+    addCourse = () => {
+        let course_id = this.state.value
+        let updateParent = this.props.callbackParent
+        $.post( "/plugins/problems_bank/api/bank_courses", { "course_id": course_id }, function( data ) {
+            console.log(data)
+            updateParent()
+        });
+    }
+
     render() {
         const inputProps = {
             placeholder: 'Type a course name or course id',
@@ -67,14 +76,19 @@ class CourseAutosuggest extends React.Component {
         };
 
         return (
-            <Autosuggest
-                suggestions={this.state.suggestions}
-                onSuggestionsFetchRequested={({value}) => this.setState({suggestions: this.getSuggestions(value)})}
-                onSuggestionsClearRequested={() => this.setState({suggestions: []}) }
-                getSuggestionValue={(suggestion) => suggestion.id}
-                renderSuggestion={this.renderSuggestion}
-                inputProps={inputProps}
-            />
+            <div>
+                <Autosuggest
+                    suggestions={this.state.suggestions}
+                    onSuggestionsFetchRequested={({value}) => this.setState({suggestions: this.getSuggestions(value)})}
+                    onSuggestionsClearRequested={() => this.setState({suggestions: []}) }
+                    getSuggestionValue={(suggestion) => suggestion.id}
+                    renderSuggestion={this.renderSuggestion}
+                    inputProps={inputProps}
+                />
+                <button onClick={this.addCourse}>
+                    Add course to bank
+                </button>
+            </div>
         );
     }
 }
@@ -111,6 +125,10 @@ class BankCourseList extends React.Component {
         this.updateAvailableCoursesAsync()
     }
 
+    onChildChanged(){
+        this.updateBankCoursesAsync()
+    }
+
     render() {
         let courses = this.state.courses.map((course, i) => {
             return (<BankCourse name={course} key={i} />)
@@ -121,7 +139,8 @@ class BankCourseList extends React.Component {
                 <div>The following courses are marked as task sources: </div>
 
                 <div className="list-group">{courses}</div>
-                <CourseAutosuggest courses={this.state.availableCourses} />
+                <CourseAutosuggest courses={this.state.availableCourses}
+                                   callbackParent={() => this.onChildChanged()}/>
             </div>
 
         );
