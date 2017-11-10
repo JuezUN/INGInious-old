@@ -63,6 +63,8 @@ class CourseEditTask(INGIniousAdminPage):
                 problem["custom"] = inginious.common.custom_yaml.dump(problem_copy)
 
         additional_tabs = self.plugin_manager.call_hook('task_editor_tab', course=course, taskid=taskid,
+                                                        task_data=task_data, template_helper=self.template_helper)
+        additional_footer = self.plugin_manager.call_hook('task_editor_footer', course=course, taskid=taskid,
                                                           task_data=task_data, template_helper=self.template_helper)
 
         return self.template_helper.get_renderer().course_admin.task_edit(
@@ -82,7 +84,8 @@ class CourseEditTask(INGIniousAdminPage):
             AccessibleTime,
             CourseTaskFiles.get_task_filelist(self.task_factory, courseid, taskid),
             DisplayableBasicCodeProblem._available_languages,
-            additional_tabs)
+            additional_tabs,
+            additional_footer)
 
     @classmethod
     def contains_is_html(cls, data):

@@ -1,4 +1,4 @@
-$def with (course,taskid,task_data,environments,problemdump,grader_test_cases_dump,contains_is_html,current_filetype,available_filetypes,AccessibleTime,file_list,available_languages,additional_tabs)
+$def with (course,taskid,task_data,environments,problemdump,grader_test_cases_dump,contains_is_html,current_filetype,available_filetypes,AccessibleTime,file_list,available_languages,additional_tabs,additional_footer)
 
 $#
 $# This file is part of INGInious. See the LICENSE and the COPYRIGHTS files for
@@ -111,6 +111,10 @@ $var Navbar: $:NavbarF()
         </div>
     </div>
 </div>
+
+$for html in additional_footer:
+    $:html
+
 
 <!-- Must be out of the form -->
 $:include.course_admin.edit_tabs.subproblem_templates(contains_is_html, available_languages)
