@@ -12,7 +12,7 @@ _BASE_STATIC_FOLDER = os.path.join(_PLUGIN_PATH, 'static')
 _RUN_FILE_TEMPLATE_PATH = os.path.join(_PLUGIN_PATH, 'run_file_template.txt')
 
 
-def parse_grader_test_case(self, test_case_content):
+def parse_grader_test_case(test_case_content):
     if not test_case_content["input_file"]:
         raise Exception("Invalid input file in grader test case")
 
