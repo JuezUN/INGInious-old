@@ -108,7 +108,7 @@ class SearchTaskApi(AdminApi):
             course_tasks = self.course_factory.get_course(
                 bank_course_id).get_tasks()
             for task in course_tasks:
-                tasks.append(course_tasks[task].get_id())
+                tasks.append({"id": course_tasks[task].get_id()})
 
         return 200, tasks
 

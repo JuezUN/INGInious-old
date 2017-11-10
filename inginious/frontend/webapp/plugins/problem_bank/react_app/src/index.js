@@ -14,9 +14,45 @@ class BankPage extends React.Component {
                     <BankCourseList/>
                 </Tab>
                 <Tab eventKey={2} title="Tasks">
-                    <Task/>
+                    <TaskList/>
                 </Tab>
             </Tabs>
+        );
+    }
+}
+
+class TaskList extends React.Component{
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            tasks: []
+        };
+    }
+
+    updateTasksAsync() {
+        $.getJSON("/plugins/problems_bank/api/bank_tasks").then((tasks) => {
+            this.setState({
+                tasks
+            });
+        });
+    }
+
+    componentDidMount() {
+        this.updateTasksAsync()
+    }
+
+    render() {
+        let tasks = this.state.tasks.map((task, i) => {
+            return (<Task task_info={task} key={i}/>)
+        });
+
+        return (
+            <div>
+                <div>The following tasks are available for copiyng: </div>
+
+                <div className="list-group">{tasks}</div>
+            </div>
         );
     }
 }
@@ -42,10 +78,7 @@ class Task extends React.Component {
     render() {
         return (
             <div>
-                <button type="button" className="list-group-item" onClick={this.open}>Tarea 1
-                <a class="pull-right">
-                        <span class="glyphicon glyphicon-remove"></span>
-                    </a>
+                <button type="button" className="list-group-item" onClick={this.open}>{this.props.task_info.id}
                 </button>
                 <Modal className="modal-container"
                     show={this.state.showModal}
