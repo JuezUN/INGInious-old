@@ -196,10 +196,12 @@ class BarSubmissionsPerTasksApi(UserStatisticsApi):
 
         for task in sorted_tasks:
             _id = task.get_id()
+            task_name = task.get_name()
             verdicts = task_id_to_statistics.get(_id, [])
             for verdict in verdicts:
                 submissions_per_task.append({
                     "task_id": _id,
+                    "task_name": task_name,
                     "summary_result": verdict["summary_result"],
                     "count": verdict["count"]
                 })
@@ -308,10 +310,12 @@ class BestSubmissionsByVerdictApi(StatisticsAdminApi):
 
         for task in sorted_tasks:
             _id = task.get_id()
+            task_name = task.get_name()
             verdicts = task_id_to_statistics.get(_id, [])
             for verdict in verdicts:
                 best_statistics_by_verdict.append({
                     "task_id": _id,
+                    "task_name": task_name,
                     "summary_result": verdict["summary_result"],
                     "count": verdict["count"]
                 })
@@ -371,10 +375,12 @@ class SubmissionsByVerdictApi(StatisticsAdminApi):
 
         for task in sorted_tasks:
             _id = task.get_id()
+            task_name = task.get_name()
             verdicts = task_id_to_statistics.get(_id, [])
             for verdict in verdicts:
                 statistics_by_verdict.append({
                     "task_id": _id,
+                    "task_name": task_name,
                     "summary_result": verdict["summary_result"],
                     "count": verdict["count"]
                 })

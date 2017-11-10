@@ -108,15 +108,14 @@ var BarSubmissionsPerTasks = (function () {
 
     BarSubmissionsPerTasks.prototype._plotData = function (data) {
         var data_count_obj = {};
-        var tasks_id = [];
+        var tasks_names = [];
 
         for (var i = 0; i < data.length; ++i) {
-            if (data_count_obj[data[i].task_id] == null) {
-                data_count_obj[data[i].task_id] = 0;
-                tasks_id.push(data[i].task_id);
+            if (data_count_obj[data[i].task_name] == null) {
+                data_count_obj[data[i].task_name] = 0;
+                tasks_names.push(data[i].task_name);
             }
-
-            data_count_obj[data[i].task_id] += data[i].count;
+            data_count_obj[data[i].task_name] += data[i].count;
         }
 
         var colors = UserStatistics.colors;
@@ -137,7 +136,7 @@ var BarSubmissionsPerTasks = (function () {
             xaxis: {
                 title: 'Tasks',
                 categoryorder: "array",
-                categoryarray: tasks_id,
+                categoryarray: tasks_names,
                 titlefont: {
                     size: 16,
                     color: 'rgb(107, 107, 107)'
@@ -168,9 +167,9 @@ var BarSubmissionsPerTasks = (function () {
 
         for (var i = 0; i < data.length; ++i) {
             if (data[i].summary_result === verdict) {
-                plotData.x.push(data[i].task_id);
+                plotData.x.push(data[i].task_name);
                 if (this.normalize) {
-                    plotData.y.push((data[i].count / data_count_obj[data[i].task_id]) * 100);
+                    plotData.y.push((data[i].count / data_count_obj[data[i].task_name]) * 100);
                 } else {
                     plotData.y.push(data[i].count);
                 }
