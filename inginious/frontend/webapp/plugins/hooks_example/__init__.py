@@ -1,5 +1,4 @@
 import logging
-import web
 import json
 
 _BASE_RENDERER_PATH = 'frontend/webapp/plugins/hooks_example'
