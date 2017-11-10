@@ -26,6 +26,7 @@ var UserTrialsAndBestGradeStatistic = (function () {
     };
 
     UserTrialsAndBestGradeStatistic.prototype._plotData = function (tries_per_tasks) {
+        console.log(tries_per_tasks);
         var SUBMISSIONS_COUNT_TO_PIXELS = this._getRatio(tries_per_tasks);
         var plotData = {};
         var results = Object.keys(UserStatistics.colors);
@@ -52,7 +53,7 @@ var UserTrialsAndBestGradeStatistic = (function () {
         for (var index = 0; index < tries_per_tasks.length; index++) {
             var result = tries_per_tasks[index].result;
 
-            plotData[result]["x"].push(tries_per_tasks[index].taskid);
+            plotData[result]["x"].push(tries_per_tasks[index].taskname);
             plotData[result]["y"].push(tries_per_tasks[index].grade);
             plotData[result]["text"].push(tries_per_tasks[index].tried + " submissions");
             plotData[result]["marker"]["size"].push(tries_per_tasks[index].tried);

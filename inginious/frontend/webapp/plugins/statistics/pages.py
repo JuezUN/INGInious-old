@@ -135,8 +135,42 @@ class TrialsAndBestGradeApi(UserStatisticsApi):
             }
         ])
 
-        return 200, list(best_submissions)
+        course = self.course_factory.get_course(course_id)
+        course_tasks = course.get_tasks()
+        sorted_tasks = sorted(course_tasks.values(), key=lambda task: task.get_order())
 
+        task_id_to_statistics = {}
+        for element in best_submissions:
+            task_id = element["taskid"]
+
+            if task_id not in task_id_to_statistics:
+                task_id_to_statistics[task_id] = []
+
+            task_id_to_statistics[task_id].append({
+                "grade": element["grade"],
+                "result": element["result"],
+                "taskid": element["taskid"],
+                "tried": element["tried"]
+            })
+
+        best_submissions = []
+
+        for task in sorted_tasks:
+            _id = task.get_id()
+            task_name = task.get_name()
+            verdicts = task_id_to_statistics.get(_id, [])
+            for verdict in verdicts:
+                best_submissions.append({
+                    "taskid": _id,
+                    "taskname": task_name,
+                    "grade": verdict["grade"],
+                    "result": verdict["result"],
+                    "tried": verdict["tried"]
+                    
+                })
+
+        return 200, best_submissions
+    
 
 class BarSubmissionsPerTasksApi(UserStatisticsApi):
     def statistics(self):
