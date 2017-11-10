@@ -1,4 +1,4 @@
-$def with (course,taskid,task_data,environments,problemdump,grader_test_cases_dump,contains_is_html,current_filetype,available_filetypes,AccessibleTime,file_list,available_languages)
+$def with (course,taskid,task_data,environments,problemdump,grader_test_cases_dump,contains_is_html,current_filetype,available_filetypes,AccessibleTime,file_list,available_languages,additional_tabs)
 
 $#
 $# This file is part of INGInious. See the LICENSE and the COPYRIGHTS files for
@@ -48,6 +48,8 @@ $var Navbar: $:NavbarF()
                 fa-check-circle fa-fw"></i>&nbsp; Grader</a></li>
             <li role="presentation"><a href="#tab_files" aria-controls="files" role="tab" data-toggle="tab"><i class="fa
                 fa-edit fa-fw"></i>&nbsp; Task files</a></li>
+            $for tab_id, link, _ in additional_tabs:
+                <li role="presentation"><a href="#$tab_id" aria-controls="$tab_id" role="tab" data-toggle="tab">$:link</a></li>
         </ul>
         <div id="edit_task_tabs_content" class="tab-content">
             <div role="tabpanel" class="tab-pane active" id="tab_basic">
@@ -75,6 +77,11 @@ $var Navbar: $:NavbarF()
                     $:include.course_admin.edit_tabs.files(course,taskid,file_list,None)
                 </div>
             </div>
+
+            $for tab_id, _, tab_content in additional_tabs:
+                <div role="tabpanel" class="tab-pane" id="$tab_id">
+                    $:tab_content
+                </div>
 
         </div>
     </div>
