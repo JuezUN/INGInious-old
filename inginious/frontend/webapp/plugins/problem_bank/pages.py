@@ -98,6 +98,21 @@ class AvailableCoursesApi(AdminApi):
         return 200, available_courses
 
 
+class SearchTaskApi(AdminApi):
+    def API_GET(self):
+        bank_course_ids = set(bank["courseid"]
+                              for bank in self.database.problem_banks.find())
+
+        tasks = []
+        for bank_course_id in bank_course_ids:
+            course_tasks = self.course_factory.get_course(
+                bank_course_id).get_tasks()
+            for task in course_tasks:
+                tasks.append(course_tasks[task].get_id())
+
+        return 200, tasks
+
+
 class BankPage(INGIniousAdminPage):
     def _list_files_recursive(self, folder):
         return [os.path.relpath(os.path.join(root, name), folder) for root, _, files in os.walk(folder) for name in files]

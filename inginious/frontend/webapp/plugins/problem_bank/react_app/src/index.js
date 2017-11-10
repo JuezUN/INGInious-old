@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Autosuggest from 'react-autosuggest';
-import { Tabs, Tab } from 'react-bootstrap';
+import { Tabs, Tab, Modal, Button } from 'react-bootstrap';
 import './index.css';
 
 /*global $:false*/
@@ -14,9 +14,59 @@ class BankPage extends React.Component {
                     <BankCourseList/>
                 </Tab>
                 <Tab eventKey={2} title="Tasks">
-                    Tasks
+                    <Task/>
                 </Tab>
             </Tabs>
+        );
+    }
+}
+
+class Task extends React.Component {
+    constructor(props, context) {
+        super(props, context);
+
+        this.state = {
+            showModal: false
+        };
+    }
+
+
+    open = () => {
+        this.setState({ showModal: true });
+    }
+
+    close = () => {
+        this.setState({ showModal: false });
+    }
+
+    render() {
+        return (
+            <div>
+                <button type="button" className="list-group-item" onClick={this.open}>Tarea 1
+                <a class="pull-right">
+                        <span class="glyphicon glyphicon-remove"></span>
+                    </a>
+                </button>
+                <Modal className="modal-container"
+                    show={this.state.showModal}
+                    onHide={this.close}
+                    animation={true}
+                    bsSize="large">
+
+                    <Modal.Header closeButton>
+                        <Modal.Title>Modal title</Modal.Title>
+                    </Modal.Header>
+
+                    <Modal.Body>
+                        Hey jude
+                    </Modal.Body>
+
+                    <Modal.Footer>
+                        <Button onClick={this.close}>Close</Button>
+                        <Button bsStyle="primary">Save changes</Button>
+                    </Modal.Footer>
+                </Modal>
+            </div>
         );
     }
 }

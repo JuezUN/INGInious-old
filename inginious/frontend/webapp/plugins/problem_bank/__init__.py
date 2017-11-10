@@ -13,4 +13,5 @@ def init(plugin_manager, course_factory, client, config):
     plugin_manager.add_page(r'/plugins/problems_bank/api/copy_task', pages.CopyTaskApi)
     plugin_manager.add_page(r'/plugins/problems_bank/api/bank_courses', pages.ManageBanksCoursesApi)
     plugin_manager.add_page(r'/plugins/problems_bank/api/available_courses', pages.AvailableCoursesApi)
+    plugin_manager.add_page(r'/plugins/problems_bank/api/bank_tasks', pages.SearchTaskApi)
     plugin_manager.add_page(r'/plugins/problems_bank', pages.BankPage)
