@@ -12,17 +12,27 @@ _BASE_STATIC_FOLDER = os.path.join(_PLUGIN_PATH, 'static')
 _RUN_FILE_TEMPLATE_PATH = os.path.join(_PLUGIN_PATH, 'run_file_template.txt')
 
 
-def parse_grader_test_case(test_case_content):
-    if not test_case_content["input_file"]:
-        raise Exception("Invalid input file in grader test case")
+class InvalidGraderTestCaseError(Exception):
+    def __init__(self, message, *args):
+        super().__init__(message, *args)
 
-    if not test_case_content["output_file"]:
-        raise Exception("Invalid output file in grader test case")
+        self.message = message
+
+
+def parse_grader_test_case(test_case_content):
+    if not test_case_content.get("input_file", None):
+        raise InvalidGraderTestCaseError("Invalid input file in grader test case")
+
+    if not test_case_content.get("output_file", None):
+        raise InvalidGraderTestCaseError("Invalid output file in grader test case")
 
     try:
-        test_case_content["weight"] = float(test_case_content["weight"])
-    except:
-        raise Exception("The weight for grader test cases must be a float")
+        test_case_content["weight"] = float(test_case_content.get("weight", 1.0))
+    except (ValueError, TypeError):
+        raise InvalidGraderTestCaseError("The weight for grader test cases must be a float")
+
+    if test_case_content["weight"] < 0:
+        raise InvalidGraderTestCaseError("The weight for grader test cases must be non-negative")
 
     test_case_content["diff_shown"] = "diff_shown" in test_case_content
 
@@ -31,16 +41,16 @@ def parse_grader_test_case(test_case_content):
 
 def on_task_editor_submit(course, taskid, task_data, task_fs):
     try:
-        task_data["grader_diff_max_lines"] = int(task_data["grader_diff_max_lines"])
-    except:
+        task_data["grader_diff_max_lines"] = int(task_data.get("grader_diff_max_lines", None))
+    except (ValueError, TypeError):
         return json.dumps({"status": "error", "message": "'Maximum diff lines' must be an integer"})
 
     if task_data["grader_diff_max_lines"] <= 0:
         return json.dumps({"status": "error", "message": "'Maximum diff lines' must be positive"})
 
     try:
-        task_data["grader_diff_context_lines"] = int(task_data["grader_diff_context_lines"])
-    except:
+        task_data["grader_diff_context_lines"] = int(task_data.get("grader_diff_context_lines", None))
+    except (ValueError, TypeError):
         return json.dumps({"status": "error", "message": "'Diff context lines' must be an integer"})
 
     if task_data["grader_diff_context_lines"] <= 0:
@@ -57,10 +67,17 @@ def on_task_editor_submit(course, taskid, task_data, task_fs):
     for key in keys_to_remove:
         del task_data[key]
 
-    task_data["grader_test_cases"] = [parse_grader_test_case(val) for _, val in grader_test_cases.items()]
+    try:
+        task_data["grader_test_cases"] = [parse_grader_test_case(val) for _, val in grader_test_cases.items()]
+    except InvalidGraderTestCaseError as e:
+        return json.dumps({"status": "error", "message": e.message})
+
     task_data["grader_test_cases"].sort(key=lambda test_case: (test_case["input_file"], test_case["output_file"]))
 
-    if len(set(test_case["input_file"] for test_case in task_data["grader_test_cases"])) != len(task_data["grader_test_cases"]):
+    input_files_are_unique = (len(set(test_case["input_file"] for test_case in task_data["grader_test_cases"])) ==
+                              len(task_data["grader_test_cases"]))
+
+    if not input_files_are_unique:
         return json.dumps({"status": "error", "message": "Duplicated input files in grader"})
 
     for test_case in task_data["grader_test_cases"]:
@@ -82,13 +99,15 @@ def on_task_editor_submit(course, taskid, task_data, task_fs):
         problem_type = task_data["problems"][task_data["grader_problem_id"]]["type"]
         if problem_type not in ['code-multiple-languages', 'code-file-multiple-languages']:
             return json.dumps({"status": "error",
-                               "message": "Grader: only Code Multiple Language and Code File Multiple Language problems are supported"})
+                               "message": "Grader: only Code Multiple Language and Code File Multiple Language " +
+                                          "problems are supported"})
 
         with open(_RUN_FILE_TEMPLATE_PATH, "r") as f:
             run_file_template = f.read()
 
         problem_id = task_data["grader_problem_id"]
-        test_cases = [(test_case["input_file"], test_case["output_file"]) for test_case in task_data["grader_test_cases"]]
+        test_cases = [(test_case["input_file"], test_case["output_file"])
+                      for test_case in task_data["grader_test_cases"]]
         weights = [test_case["weight"] for test_case in task_data["grader_test_cases"]]
         options = {
             "compute_diff": task_data["grader_compute_diffs"],

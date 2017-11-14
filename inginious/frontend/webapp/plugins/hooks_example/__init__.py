@@ -46,7 +46,7 @@ def on_task_editor_submit(course, taskid, task_data, task_fs):
     # We can modify task data here
     task_data['example_field'] = 'test'
 
-    # We can also check for correctness and raise and error if something is wrong
+    # We can also check for correctness and raise an error if something is wrong
     if not task_data.get('example_task_hint', None):
         return json.dumps({"status": "error", "message": "You must provide a task hint"})
 
