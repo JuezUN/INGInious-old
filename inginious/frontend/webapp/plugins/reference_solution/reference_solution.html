@@ -1,0 +1,41 @@
+$def with (course, taskid, task_data, languages)
+
+<h3>Reference Solution</h3>
+
+<div class="form-group">
+    <label for="reference_solution_language" class="col-sm-4 control-label">Language</label>
+    <div class="col-sm-8">
+        <select  class="form-control dropdown-toggle btn " id="reference_solution_language" name="reference_solution_language"
+                 onchange="updateReferenceSolutionLanguage()">
+            $for lang in languages:
+                <option value="$lang"
+                        $if task_data.get('reference_solution_language', '') == lang :
+                            selected
+                >
+                    $languages[lang]
+                </option>
+        </select>
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="reference_solution_code" class="col-sm-4 control-label">Code</label>
+    <div class="col-sm-8">
+        <textarea class="form-control" rows="20" cols="100" id="reference_solution_code" name="reference_solution_code">${task_data.get('reference_solution_code', '')}</textarea>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var language = convertInginiousLanguageToCodemirror("$task_data.get('reference_solution_language', 'java7')");
+    registerCodeEditor($$("#reference_solution_code")[0] , language );
+
+    function updateReferenceSolutionLanguage(){
+        var chosenLanguage = $$("#reference_solution_language").val();
+        var codeMirrorLanguage = convertInginiousLanguageToCodemirror(chosenLanguage);
+        var mode = CodeMirror.findModeByName(codeMirrorLanguage);
+        var editor = $$("#reference_solution_code").next(".CodeMirror")[0].CodeMirror;
+
+        editor.setOption("mode", mode.mime);
+        CodeMirror.autoLoadMode(editor, mode);
+    }
+</script>
