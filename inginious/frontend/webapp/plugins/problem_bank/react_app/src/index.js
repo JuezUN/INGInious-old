@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Autosuggest from 'react-autosuggest';
-import { Tabs, Tab, Modal, Button } from 'react-bootstrap';
+import { Tabs, Tab, Modal, Button, Row, Col, Well, Alert } from 'react-bootstrap';
 import './index.css';
 
 /*global $:false*/
@@ -49,14 +49,13 @@ class TaskList extends React.Component{
 
         return (
             <div>
-                <div>The following tasks are available for copiyng: </div>
+                <div>The following tasks are available for copying: </div>
 
                 <div className="list-group">{tasks}</div>
             </div>
         );
     }
 }
-
 
 class GeneralCourseAutosuggest extends React.Component {
     constructor(props) {
@@ -75,13 +74,13 @@ class GeneralCourseAutosuggest extends React.Component {
             return course.name.toUpperCase().startsWith(normalizedValue) ||
                 course.id.toUpperCase().startsWith(normalizedValue);
         });
-    }
+    };
 
     renderSuggestion = (suggestion, {query, isHighlighted}) => {
         return (
             <span>{suggestion.name}</span>
         );
-    }
+    };
 
     onChange = (event, { newValue }) => {
         this.setState({
@@ -103,13 +102,17 @@ class GeneralCourseAutosuggest extends React.Component {
 
     addToCourse = () => {
         let target_id = this.state.value;
-        let task_id = this.props.task_info.id;
+        let task_id = this.props.task_info.task_id;
         let bank_id = this.props.task_info.course_id;
+
+        this.props.modal.close();
 
         $.post( "/plugins/problems_bank/api/copy_task", {"target_id": target_id, "task_id": task_id, "bank_id": bank_id} ,function( data ) {
             alert(data["message"]);
+            {/*<Alert bsStyle="success">{data["message"]}</Alert>*/}
         });
-    }
+
+    };
 
     render() {
         const inputProps = {
@@ -119,19 +122,26 @@ class GeneralCourseAutosuggest extends React.Component {
         };
 
         return (
-            <div>
-                <Autosuggest
+            <Row>
+              <Col md={4}>
+                  <Autosuggest
                     suggestions={this.state.suggestions}
                     onSuggestionsFetchRequested={({value}) => this.setState({suggestions: this.getSuggestions(value)})}
                     onSuggestionsClearRequested={() => this.setState({suggestions: []}) }
                     getSuggestionValue={(suggestion) => suggestion.id}
                     renderSuggestion={this.renderSuggestion}
                     inputProps={inputProps}
-                />
-                <button onClick={this.addToCourse} class="btn btn-primary">
-                    OK
-                </button>
-            </div>
+                  />
+              </Col>
+              <Col md={4}>
+                  <button onClick={this.addToCourse} class="btn btn-primary">
+                    Copy task
+                  </button>
+              </Col>
+              <Col mdHidden={6}>
+              </Col>
+            </Row>
+
         );
     }
 }
@@ -148,16 +158,16 @@ class Task extends React.Component {
 
     open = () => {
         this.setState({ showModal: true });
-    }
+    };
 
     close = () => {
         this.setState({ showModal: false });
-    }
+    };
 
     render() {
         return (
             <div>
-                <button type="button" className="list-group-item" onClick={this.open}>{this.props.task_info.id}
+                <button type="button" className="list-group-item" onClick={this.open}>{this.props.task_info.task_name}
                 </button>
                 <Modal className="modal-container"
                     show={this.state.showModal}
@@ -166,11 +176,33 @@ class Task extends React.Component {
                     bsSize="large">
 
                     <Modal.Header closeButton>
-                        <Modal.Title>Seleccione curso de destino</Modal.Title>
+                        <Modal.Title> {this.props.task_info.task_name} </Modal.Title>
                     </Modal.Header>
 
                     <Modal.Body>
-                        <GeneralCourseAutosuggest task_info={this.props.task_info} callbackParent={this.addToCourse}/>
+
+                        <Row>
+                          <Col md={1}>
+                            <h5>Author</h5>
+                          </Col>
+                          <Col md={11}>
+                              <Well bsSize="small">{this.props.task_info.task_author}</Well>
+                          </Col>
+                        </Row>
+
+                        <Row>
+                          <Col md={1}>
+                            <h5>Context</h5>
+                          </Col>
+                          <Col md={11}>
+                              <Well bsSize="small">{this.props.task_info.task_context}</Well>
+                          </Col>
+                        </Row>
+
+                        <Well bsSize="small">
+                            <h5>Select destination course</h5>
+                            <GeneralCourseAutosuggest task_info={this.props.task_info} modal={this}/>
+                        </Well>
                     </Modal.Body>
 
                     <Modal.Footer>
@@ -197,7 +229,7 @@ class BankCourse extends React.Component {
                 updateParent()
             }
         })
-    }
+    };
 
     render() {
         return (
@@ -228,13 +260,13 @@ class CourseAutosuggest extends React.Component {
             return course.name.toUpperCase().startsWith(normalizedValue) ||
                 course.id.toUpperCase().startsWith(normalizedValue);
         });
-    }
+    };
 
     renderSuggestion = (suggestion, {query, isHighlighted}) => {
         return (
             <span>{suggestion.name}</span>
         );
-    }
+    };
 
     onChange = (event, { newValue }) => {
         this.setState({
@@ -249,7 +281,7 @@ class CourseAutosuggest extends React.Component {
             console.log(data)
             updateParent()
         });
-    }
+    };
 
     render() {
         const inputProps = {
@@ -259,7 +291,9 @@ class CourseAutosuggest extends React.Component {
         };
 
         return (
-            <div>
+
+            <Row>
+              <Col md={4}>
                 <Autosuggest
                     suggestions={this.state.suggestions}
                     onSuggestionsFetchRequested={({value}) => this.setState({suggestions: this.getSuggestions(value)})}
@@ -268,10 +302,15 @@ class CourseAutosuggest extends React.Component {
                     renderSuggestion={this.renderSuggestion}
                     inputProps={inputProps}
                 />
+              </Col>
+              <Col md={2}>
                 <button onClick={this.addCourse} class="btn btn-primary">
                     Add course to bank
                 </button>
-            </div>
+              </Col>
+              <Col mdHidden={6}>
+              </Col>
+            </Row>
         );
     }
 }
@@ -323,8 +362,13 @@ class BankCourseList extends React.Component {
                 <div>The following courses are marked as task sources: </div>
 
                 <div className="list-group">{courses}</div>
-                <CourseAutosuggest courses={this.state.availableCourses}
-                                   callbackParent={() => this.onChildChanged()}/>
+
+                <Well bsSize="small">
+                    <h5>Select course to become in bank</h5>
+                    <CourseAutosuggest courses={this.state.availableCourses}
+                                       callbackParent={() => this.onChildChanged()}/>
+                </Well>
+
             </div>
 
         );
