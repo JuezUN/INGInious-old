@@ -115,6 +115,29 @@ class SearchTaskApi(AdminApi):
         return 200, tasks
 
 
+class FilterTasksApi(AdminApi):
+    def API_POST(self):
+
+        parameters = web.input()
+        task_query = self.get_mandatory_parameter(parameters, "task_query")
+        bank_course_ids = set(bank["courseid"]
+                              for bank in self.database.problem_banks.find())
+
+        tasks = []
+        for bank_course_id in bank_course_ids:
+            course_tasks = self.course_factory.get_course(bank_course_id).get_tasks()
+            for task in course_tasks:
+                task_id = course_tasks[task].get_id()
+                task_name = course_tasks[task].get_name()
+                if (task_query.lower() in task_id.lower()) or (task_query.lower() in task_name.lower()):
+                    task_descriptor = self.course_factory.get_course(bank_course_id)._task_factory.get_task_descriptor_content(bank_course_id, course_tasks[task].get_id())
+                    tasks.append({"course_id": course_tasks[task].get_course_id(), "task_id": task_id,
+                                  "task_name": task_name, "task_author": task_descriptor["author"],
+                                  "task_context": task_descriptor["context"] })
+
+        return 200, tasks
+
+
 class BankPage(INGIniousAdminPage):
     def _list_files_recursive(self, folder):
         return [os.path.relpath(os.path.join(root, name), folder) for root, _, files in os.walk(folder) for name in files]
