@@ -26,7 +26,9 @@ class TaskList extends React.Component{
         super(props);
 
         this.state = {
-            tasks: []
+            tasks: [],
+            data: {"message" : ""},
+            isVisible: false
         };
     }
 
@@ -42,9 +44,20 @@ class TaskList extends React.Component{
         this.updateTasksAsync()
     }
 
+    onChildChanged(data){
+        this.setState({
+           data
+        });
+        this.setState({
+           isVisible: true
+        });
+    }
+
     render() {
         let tasks = this.state.tasks.map((task, i) => {
-            return (<Task task_info={task} key={i}/>)
+            return (<Task task_info={task}
+                          key={i}
+                          callbackParent={(data) => this.onChildChanged(data)}/>)
         });
 
         return (
@@ -52,6 +65,8 @@ class TaskList extends React.Component{
                 <div>The following tasks are available for copying: </div>
 
                 <div className="list-group">{tasks}</div>
+
+                <CustomAlert message={this.state.data["message"]} isVisible={this.state.isVisible} />
             </div>
         );
     }
@@ -105,11 +120,10 @@ class GeneralCourseAutosuggest extends React.Component {
         let task_id = this.props.task_info.task_id;
         let bank_id = this.props.task_info.course_id;
 
-        this.props.modal.close();
+        let updateParent = this.props.callbackParent;
 
         $.post( "/plugins/problems_bank/api/copy_task", {"target_id": target_id, "task_id": task_id, "bank_id": bank_id} ,function( data ) {
-            alert(data["message"]);
-            {/*<Alert bsStyle="success">{data["message"]}</Alert>*/}
+            updateParent(data);
         });
 
     };
@@ -141,7 +155,6 @@ class GeneralCourseAutosuggest extends React.Component {
               <Col mdHidden={6}>
               </Col>
             </Row>
-
         );
     }
 }
@@ -163,6 +176,12 @@ class Task extends React.Component {
     close = () => {
         this.setState({ showModal: false });
     };
+
+    onChildChanged(data){
+        let updateParent = this.props.callbackParent;
+        updateParent(data);
+        this.close();
+    }
 
     render() {
         return (
@@ -201,7 +220,8 @@ class Task extends React.Component {
 
                         <Well bsSize="small">
                             <h5>Select destination course</h5>
-                            <GeneralCourseAutosuggest task_info={this.props.task_info} modal={this}/>
+                            <GeneralCourseAutosuggest task_info={this.props.task_info}
+                                                      callbackParent={(data) => this.onChildChanged(data)}/>
                         </Well>
                     </Modal.Body>
 
@@ -215,17 +235,41 @@ class Task extends React.Component {
     }
 }
 
+
+class CustomAlert extends React.Component {
+
+    handleAlertDismiss = () => {
+        this.props.isVisible = false;
+        this.forceUpdate();
+    };
+
+    render() {
+        if (this.props.isVisible) {
+          return (
+            <Alert bsStyle="success" onDismiss={this.handleAlertDismiss}>
+              <h4>Success!</h4>
+              <p>{this.props.message}</p>
+            </Alert>
+          );
+        }else{
+            return (
+                <p>
+                </p>
+            );
+        }
+    }
+}
+
 class BankCourse extends React.Component {
 
     deleteCourse = () => {
-        let course_id = this.props.name
-        let updateParent = this.props.callbackParent
+        let course_id = this.props.name;
+        let updateParent = this.props.callbackParent;
 
         $.ajax({
             url: '/plugins/problems_bank/api/bank_courses?' + $.param({"course_id": course_id}),
             type: "DELETE",
             success: function(data){
-                console.log(data)
                 updateParent()
             }
         })
@@ -275,10 +319,9 @@ class CourseAutosuggest extends React.Component {
     };
 
     addCourse = () => {
-        let course_id = this.state.value
-        let updateParent = this.props.callbackParent
+        let course_id = this.state.value;
+        let updateParent = this.props.callbackParent;
         $.post( "/plugins/problems_bank/api/bank_courses", { "course_id": course_id }, function( data ) {
-            console.log(data)
             updateParent()
         });
     };
@@ -343,13 +386,13 @@ class BankCourseList extends React.Component {
     }
 
     componentDidMount() {
-        this.updateBankCoursesAsync()
-        this.updateAvailableCoursesAsync()
+        this.updateBankCoursesAsync();
+        this.updateAvailableCoursesAsync();
     }
 
     onChildChanged(){
-        this.updateBankCoursesAsync()
-        this.updateAvailableCoursesAsync()
+        this.updateBankCoursesAsync();
+        this.updateAvailableCoursesAsync();
     }
 
     render() {
