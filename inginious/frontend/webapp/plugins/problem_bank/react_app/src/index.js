@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Autosuggest from 'react-autosuggest';
 import { Tabs, Tab, Modal, Button, Row, Col, Well, Alert } from 'react-bootstrap';
+import {createUltimatePagination, ITEM_TYPES} from 'react-ultimate-pagination';
 import './index.css';
 
 /*global $:false*/
@@ -11,15 +12,54 @@ class BankPage extends React.Component {
         return (
             <Tabs defaultActiveKey={1} id="bank-page-tabs">
                 <Tab eventKey={1} title="Courses">
-                    <BankCourseList/>
+                    <BankCourseList limit={10}/>
                 </Tab>
                 <Tab eventKey={2} title="Tasks">
-                    <TaskList/>
+                    <TaskList limit={10}/>
                 </Tab>
             </Tabs>
         );
     }
 }
+
+const WrapperComponent = ({children}) => (
+  <ul className="pagination custom-pagination" >{children}</ul>
+);
+
+const Page = ({value, isActive, onClick}) => (
+  <li className={isActive ? 'active' : null}><a href="#" onClick={onClick}>{value}</a></li>
+);
+
+const Ellipsis = ({onClick}) => (
+  <li><a href="#" onClick={onClick}>...</a></li>
+);
+
+const FirstPageLink = ({isActive, onClick}) => (
+  <li><a href="#" onClick={onClick}>&laquo;</a></li>
+);
+
+const PreviousPageLink = ({isActive, onClick}) => (
+  <li><a href="#" onClick={onClick}>&lsaquo;</a></li>
+);
+
+const NextPageLink = ({isActive, onClick}) => (
+  <li><a href="#" onClick={onClick}>&rsaquo;</a></li>
+);
+
+const LastPageLink = ({isActive, onClick}) => (
+  <li><a href="#" onClick={onClick}>&raquo;</a></li>
+);
+
+const itemTypeToComponent = {
+  [ITEM_TYPES.PAGE]: Page,
+  [ITEM_TYPES.ELLIPSIS]: Ellipsis,
+  [ITEM_TYPES.FIRST_PAGE_LINK]: FirstPageLink,
+  [ITEM_TYPES.PREVIOUS_PAGE_LINK]: PreviousPageLink,
+  [ITEM_TYPES.NEXT_PAGE_LINK]: NextPageLink,
+  [ITEM_TYPES.LAST_PAGE_LINK]: LastPageLink
+};
+
+const UltimatePagination = createUltimatePagination({itemTypeToComponent, WrapperComponent});
 
 class TaskList extends React.Component{
     constructor(props) {
@@ -28,14 +68,21 @@ class TaskList extends React.Component{
         this.state = {
             tasks: [],
             data: {"message" : ""},
-            isVisible: false
+            isVisible: false,
+            page: 1,
+            total_pages: 1
         };
+
+        this.onPageChange = this.onPageChange.bind(this);
     }
 
     updateTasksAsync() {
         $.getJSON("/plugins/problems_bank/api/bank_tasks").then((tasks) => {
             this.setState({
                 tasks
+            });
+            this.setState({
+                total_pages: Math.ceil(this.state.tasks.length / this.props.limit)
             });
         });
     }
@@ -53,11 +100,16 @@ class TaskList extends React.Component{
         });
     }
 
+    onPageChange(page) {
+        this.setState({page});
+    }
+
     render() {
         let tasks = this.state.tasks.map((task, i) => {
-            return (<Task task_info={task}
-                          key={i}
-                          callbackParent={(data) => this.onChildChanged(data)}/>)
+            if(i >= ((this.state.page - 1) * this.props.limit) && i < (this.state.page * this.props.limit)){
+                return (<Task task_info={task} key={i}
+                              callbackParent={(data) => this.onChildChanged(data)}/>)
+            }
         });
 
         return (
@@ -65,6 +117,12 @@ class TaskList extends React.Component{
                 <div>The following tasks are available for copying: </div>
 
                 <div className="list-group">{tasks}</div>
+
+                <UltimatePagination
+                     currentPage={this.state.page}
+                     totalPages={this.state.total_pages}
+                     onChange={this.onPageChange}
+                />
 
                 <CustomAlert message={this.state.data["message"]} isVisible={this.state.isVisible} />
             </div>
@@ -336,7 +394,7 @@ class CourseAutosuggest extends React.Component {
         return (
 
             <Row>
-              <Col md={4}>
+              <Col md={3}>
                 <Autosuggest
                     suggestions={this.state.suggestions}
                     onSuggestionsFetchRequested={({value}) => this.setState({suggestions: this.getSuggestions(value)})}
@@ -351,7 +409,9 @@ class CourseAutosuggest extends React.Component {
                     Add course to bank
                 </button>
               </Col>
-              <Col mdHidden={6}>
+              <Col mdHidden={5}>
+              </Col>
+              <Col mdHidden={2}>
               </Col>
             </Row>
         );
@@ -365,14 +425,20 @@ class BankCourseList extends React.Component {
         this.state = {
             courses: [],
             courseIdToAdd: '',
-            availableCourses: []
+            availableCourses: [],
+            page: 1,
+            total_pages: 1
         };
+        this.onPageChange = this.onPageChange.bind(this);
     }
 
     updateBankCoursesAsync() {
         $.getJSON("/plugins/problems_bank/api/bank_courses").then((courses) => {
             this.setState({
                 courses
+            });
+            this.setState({
+                total_pages: Math.ceil(this.state.courses.length / this.props.limit)
             });
         });
     }
@@ -395,22 +461,35 @@ class BankCourseList extends React.Component {
         this.updateAvailableCoursesAsync();
     }
 
+    onPageChange(page) {
+        this.setState({page});
+    }
+
     render() {
         let courses = this.state.courses.map((course, i) => {
-            return (<BankCourse name={course} key={i} callbackParent={() => this.onChildChanged()}/>)
+            if(i >= ((this.state.page - 1) * this.props.limit) && i < (this.state.page * this.props.limit)) {
+                return (<BankCourse name={course} key={i} callbackParent={() => this.onChildChanged()}/>)
+            }
         });
 
         return (
             <div>
-                <div>The following courses are marked as task sources: </div>
-
-                <div className="list-group">{courses}</div>
 
                 <Well bsSize="small">
                     <h5>Select course to become in bank</h5>
                     <CourseAutosuggest courses={this.state.availableCourses}
                                        callbackParent={() => this.onChildChanged()}/>
                 </Well>
+
+                <div>The following courses are marked as task sources: </div>
+
+                <div className="list-group">{courses}</div>
+
+                <UltimatePagination
+                     currentPage={this.state.page}
+                     totalPages={this.state.total_pages}
+                     onChange={this.onPageChange}
+                />
 
             </div>
 

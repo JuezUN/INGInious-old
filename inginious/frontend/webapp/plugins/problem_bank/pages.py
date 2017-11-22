@@ -129,7 +129,7 @@ class FilterTasksApi(AdminApi):
             for task in course_tasks:
                 task_id = course_tasks[task].get_id()
                 task_name = course_tasks[task].get_name()
-                if (task_query.lower() in task_id.lower()) or (task_query.lower() in task_name.lower()):
+                if task_query.lower() in task_name.lower():
                     task_descriptor = self.course_factory.get_course(bank_course_id)._task_factory.get_task_descriptor_content(bank_course_id, course_tasks[task].get_id())
                     tasks.append({"course_id": course_tasks[task].get_course_id(), "task_id": task_id,
                                   "task_name": task_name, "task_author": task_descriptor["author"],

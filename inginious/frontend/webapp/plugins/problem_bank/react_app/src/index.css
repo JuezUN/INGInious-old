@@ -55,3 +55,11 @@
 .react-autosuggest__suggestion--highlighted {
   background-color: #ddd;
 }
+
+.custom-pagination{
+  margin: 0;
+  margin-bottom: 15px;
+  font-size: 16px;
+  display: flex;
+  justify-content: center;
+}
