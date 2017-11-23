@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Autosuggest from 'react-autosuggest';
-import { Tabs, Tab, Modal, Button, Row, Col, Well, Alert } from 'react-bootstrap';
+import { Tabs, Tab, Modal, Button, Row, Col, Well, Alert, FormControl } from 'react-bootstrap';
 import {createUltimatePagination, ITEM_TYPES} from 'react-ultimate-pagination';
 import './index.css';
 
@@ -74,6 +74,7 @@ class TaskList extends React.Component{
         };
 
         this.onPageChange = this.onPageChange.bind(this);
+        this.handleChange = this.handleChange.bind(this);
     }
 
     updateTasksAsync() {
@@ -104,6 +105,38 @@ class TaskList extends React.Component{
         this.setState({page});
     }
 
+    handleChange(e) {
+
+        let update = this;
+
+        $.post( "/plugins/problems_bank/api/filter_bank_tasks", { "task_query": e.target.value }, function( filtered_tasks ) {
+            update.setState({
+                tasks : filtered_tasks
+            });
+
+            let new_total_pages = Math.ceil(update.state.tasks.length / update.props.limit);
+
+            if( new_total_pages >= 1) {
+                if( update.state.page > new_total_pages){
+                    update.setState({
+                        page: new_total_pages,
+                        total_pages: new_total_pages
+                    });
+                }else{
+                    update.setState({
+                        total_pages: new_total_pages
+                    });
+                }
+            }else{
+                update.setState({
+                    page :1,
+                    total_pages: 1
+                });
+            }
+        });
+
+    };
+
     render() {
         let tasks = this.state.tasks.map((task, i) => {
             if(i >= ((this.state.page - 1) * this.props.limit) && i < (this.state.page * this.props.limit)){
@@ -114,6 +147,16 @@ class TaskList extends React.Component{
 
         return (
             <div>
+
+                <form className="custom-search-input">
+                  <FormControl
+                    type="text"
+                    value={this.state.value}
+                    placeholder="Search a key word"
+                    onChange={this.handleChange}
+                  />
+                </form>
+
                 <div>The following tasks are available for copying: </div>
 
                 <div className="list-group">{tasks}</div>
