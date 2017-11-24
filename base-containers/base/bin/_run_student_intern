@@ -8,6 +8,7 @@ import shlex
 import socket
 import subprocess
 import threading
+import time
 
 import msgpack
 import array
@@ -79,6 +80,8 @@ print("Chdir")
 os.chdir(start_cmd["working_dir"])
 print("Popen")
 print(fds)
+
+start_time = time.perf_counter()
 p = subprocess.Popen(shlex.split(start_cmd["command"]), preexec_fn=setlimits, stdin=fds[0], stdout=fds[1], stderr=fds[2])
 
 # Handle the signals
@@ -86,9 +89,26 @@ print("Signal thread")
 thread = threading.Thread(target=lambda: handle_signals(p, client), daemon=True)
 thread.start()
 
-# Wait until the subprocess exit
 print("Waiting for process to end")
+
+# Extract resource usage
+_, _, resource_usage = os.wait4(p.pid, 0)
+execution_time = time.perf_counter() - start_time
+memory_consumption = resource_usage.ru_maxrss
+
+execution_info = {
+    "execution_time": execution_time,
+    "max_memory_usage": memory_consumption
+}
+
+# Wait until the subprocess exit
 retval = p.wait()
+
+# UN judge modification:
+# We send the execution info through the socket. Note that this might be incompatible with future changes from the
+# main INGInious repository. Another option is to save this to a file, but this process only seems to have write
+# permissions on /task/student, which might make this unsafe from student modifications.
+client.send(msgpack.dumps(execution_info, encoding="utf8"))
 
 # Exit with the same return value than the process (it will be given to docker and given back to run_student)
 print("Exiting")

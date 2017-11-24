@@ -13,6 +13,7 @@ import tempfile
 
 import msgpack
 import zmq
+import json
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, description='Runs a command in a secure environment.\n\
 This command will proxy stdin, stdout, stderr, most signals and the return value. \n\n\
@@ -28,6 +29,8 @@ parser.add_argument('--memory', help="Maximum memory for the container, in Mo. T
 parser.add_argument('--share-network', help="Share the network stack of the grading container with the student container. This is not the case by "
                                             "default. If the container container has network access, this will also be the case for the student!",
                     action='store_true', dest='share_network')
+parser.add_argument('--execution-info-file', help="Specifies an output file name for execution information", type=str,
+                    default=None)
 parser.add_argument('cmd', help="Command to be run on the remote container", nargs=argparse.REMAINDER)
 args = parser.parse_args()
 
@@ -93,6 +96,18 @@ try:
                 signal.signal(signum, receive_signal)
             except:
                 pass
+
+    # Receive execution information from student container (UN Judge modification)
+    execution_info = None
+    unpacker = msgpack.Unpacker(encoding="utf8")
+    while execution_info is None:
+        unpacker.feed(connection.recv(1))
+        for obj in unpacker:
+            execution_info = obj
+
+    if args.execution_info_file is not None:
+        with open(args.execution_info_file, 'w') as f:
+            f.write(json.dumps(execution_info))
 
     # Wait for everything to end
     message = msgpack.loads(zmq_socket.recv(), encoding="utf8", use_list=False)
