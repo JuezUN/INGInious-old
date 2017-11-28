@@ -11,4 +11,3 @@ tasks_directory: /Users/larra/INGInious/tasks
 use_minified_js: false
 plugins:
     - plugin_module: inginious.frontend.webapp.plugins.statistics
-    - plugin_module: inginious.frontend.webapp.plugins.task_cache
