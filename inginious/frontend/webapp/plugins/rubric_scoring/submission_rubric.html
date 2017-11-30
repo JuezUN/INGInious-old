@@ -1,0 +1,258 @@
+$def with (course, task_id, submission_code, problem_id, rubrica, data, language)
+
+$var title: $:course.get_name() - Rubric Scoring
+
+$def NavbarF():
+    <ol class="nav navbar-nav nav-breadcrumb">
+        <li><a href="$get_homepath()/course/$course.get_id()">$course.get_name()</a></li>
+        <li><a href="$get_homepath()/admin/$course.get_id()/$data['url']/task/$task_id.get_id()">$task_id.get_id()</a></li>
+        <li class="active"><a href="#">Rubric Scoring <span class="sr-only">(current)</span></a></li>
+    </ol>
+
+$var Navbar: $:NavbarF()
+
+
+<h3>Rubric scoring for Task: $task_id.get_id() </h3>
+
+<!-- Nav tabs -->
+<ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active">
+        <a href="#sourceCode" aria-controls="sourceCode" role="tab" data-toggle="tab">Source Code</a>
+    </li>
+    <li role="presentation">
+        <a href="#rubricContext" aria-controls="rubricContext" role="tab" data-toggle="tab">Rubric context</a>
+    </li>
+
+</ul>
+
+
+<div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="sourceCode">
+        <h4>Source code of the submission</h4>
+        <div id="grade_edit_submit_status"></div>
+        <form method="post">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        $course.get_name()
+
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    <div class="student_view">
+                        <p>print hi baker</p>
+
+                    </div>
+
+                    <textarea class="code-editor form-control"
+                              data-x-lines="1"
+                              id="codeTextArea1" name="$problem_id">$submission_code['input'][problem_id]</textarea>
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <button class="btn btn-default btn-md btn-block" type="button"
+                        onclick="lintCode('$language','$problem_id')">Linter
+                </button>
+            </div>
+
+            <div>
+
+                <div class="col-xs-8 col-sm-4 col-lg-3">
+
+                    <div >
+
+                        <h3>General Information</h3>
+                        <table class="table table-condensed">
+                            <tr>
+                                <td>Author(s)</td>
+                                <td>$submission_code['username'][0]</td>
+                            </tr>
+                            <tr>
+                                <td>Task</td>
+                                <td>
+                                    $task_id.get_id()
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Language</td>
+                                <td>
+                                    $language
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Submitted on</td>
+                                <td> $submission_code['submitted_on']</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-xs-8 col-sm-4 col-lg-3">
+                    <div >
+
+                        <h3>Information</h3>
+                        <table class="table table-condensed">
+                            <tr>
+                                <td>Memory</td>
+                                <td>$data['memory']</td>
+                            </tr>
+                            <tr>
+                                <td>Test Casses</td>
+                                <td>
+                                    $data['test_passed']
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Verdict</td>
+                                <td>
+                                    $data['verdict']
+                                </td>
+                            </tr>
+
+                        </table>
+                    </div>
+
+                </div>
+
+                <div class="col-xs-8 col-sm-4 col-lg-3">
+
+                    <h3>Scoring</h3>
+
+
+                        <label>
+                            <input value="grade1"  name="grade"  type="radio">
+                            Grade 1
+
+                        </label>
+                        <br>
+
+                         <label>
+                            <input value="grade2" name="grade" type="radio">
+                            Grade 2
+
+                        </label>
+                        <br>
+                         <label>
+                            <input value="grade3" name="grade" type="radio">
+                            Grade 3
+
+                        </label>
+                        <br>
+                         <label>
+                            <input value="grade4" name="grade" type="radio">
+                            Grade 4
+
+                        </label>
+
+                            <a href="#grade_edit_submit_status" class="btn btn-primary btn-block" type="button" onclick="grade_submit()"><i class="fa fa-save"></i> Grade</a>
+
+                </div>
+            </div>
+        </form>
+
+
+    </div>
+
+
+
+
+
+    <div role="tabpanel" class="tab-pane" id="rubricContext">
+
+        <div id="rubricContextDiv">
+            <table class="table sorted_table">
+                <thead>
+                <tr>
+                    <th></th>
+                    $for header in rubrica.data.columns.values:
+                    <th>$header</th>
+
+                </tr>
+                </thead>
+                <tbody>
+                    $for index,row in rubrica.data.iterrows():
+                    <tr>
+                        <th >$index</th>
+                        $for zeld in rubrica.data.columns.values:
+                            <td class="table_rubric"> $row[zeld] </td>
+                    </tr>
+
+
+                </tbody>
+            </table>
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+<script type="text/javascript">
+    var language = convertInginiousLanguageToCodemirror("$language");
+
+    registerCodeEditor(document.getElementById("codeTextArea1"), language);
+</script>
+
+<script type="text/javascript">
+
+    function grade_submit(){
+        var value_radio;
+        var radios = document.getElementsByName("grade");
+        var content_info = "Submission graded and stored";
+        var content_danger = "Error at grading, please select a grade"
+
+        for (var i = 0, length = radios.length; i < length; i++) {
+             if (radios[i].checked) {
+
+                  value_radio = radios[i].value;
+
+                  break;
+             }
+        }
+
+
+        jQuery.ajax({
+            success:  function(data)
+                      {
+                        studio_display_task_submit_message_rubric(content_info, "info", true);
+                      },
+            method:   "POST",
+
+            data:     {"grade": value_radio},
+
+            error: function(request, status, error){
+                studio_display_task_submit_message_rubric(content_danger, "danger", true);
+            }
+        })
+
+
+    };
+
+    function studio_display_task_submit_message_rubric(content, type, dismissible)
+    {
+        var code = getAlertCode(content, type, dismissible);
+        var element = document.getElementById('grade_edit_submit_status');
+        document.getElementById('grade_edit_submit_status').innerHTML  = code;
+        element.style.display = 'block';
+        if(dismissible) {
+                var op = 1;  // initial opacity
+                var timer = setInterval(function () {
+                if (op <= 0.1){
+                    clearInterval(timer);
+                    element.style.display = 'none';
+
+                }
+                element.style.opacity = op;
+                element.style.filter = 'alpha(opacity=' + op * 100 + ")";
+                op -= op * 0.01;
+            }, 50);
+
+        }
+    };
+</script>
+
+
+
+
