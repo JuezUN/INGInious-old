@@ -8,14 +8,30 @@ import './index.css';
 /*global $:false*/
 
 class BankPage extends React.Component {
+
+     constructor(props) {
+        super(props);
+
+        this.state = {
+            tasks: []
+        };
+
+    }
+
+    onChildChanged(tasks){
+        this.setState({
+            tasks
+        })
+    }
+
     render() {
         return (
             <Tabs defaultActiveKey={1} id="bank-page-tabs">
                 <Tab eventKey={1} title="Courses">
-                    <BankCourseList limit={10}/>
+                    <BankCourseList limit={10} callbackParent={(tasks) => this.onChildChanged(tasks)} />
                 </Tab>
                 <Tab eventKey={2} title="Tasks">
-                    <TaskList limit={10}/>
+                    <TaskList refreshTasks={this.state.tasks} limit={10}/>
                 </Tab>
             </Tabs>
         );
@@ -70,7 +86,9 @@ class TaskList extends React.Component{
             data: {"message" : ""},
             isVisible: false,
             page: 1,
-            total_pages: 1
+            total_pages: 1,
+            timer: 0,
+            query: ''
         };
 
         this.onPageChange = this.onPageChange.bind(this);
@@ -82,9 +100,17 @@ class TaskList extends React.Component{
             this.setState({
                 tasks
             });
-            this.setState({
-                total_pages: Math.ceil(this.state.tasks.length / this.props.limit)
-            });
+            if(Math.ceil(this.state.tasks.length / this.props.limit) === 0){
+                this.setState({
+                    total_pages: 1,
+                    page: 1
+                });
+            }else{
+                this.setState({
+                    total_pages: Math.ceil(this.state.tasks.length / this.props.limit),
+                    page: 1
+                });
+            }
         });
     }
 
@@ -109,35 +135,49 @@ class TaskList extends React.Component{
 
         let update = this;
 
-        $.post( "/plugins/problems_bank/api/filter_bank_tasks", { "task_query": e.target.value }, function( filtered_tasks ) {
-            update.setState({
-                tasks : filtered_tasks
-            });
+        update.setState({
+            timer : clearTimeout(update.state.timer),
+            query : e.target.value
+        });
 
-            let new_total_pages = Math.ceil(update.state.tasks.length / update.props.limit);
+        update.setState({
+           timer :  setTimeout(function() {
+                        $.post( "/plugins/problems_bank/api/filter_bank_tasks", { "task_query": update.state.query }, function( filtered_tasks ) {
+                            update.setState({
+                                tasks : filtered_tasks
+                            });
 
-            if( new_total_pages >= 1) {
-                if( update.state.page > new_total_pages){
-                    update.setState({
-                        page: new_total_pages,
-                        total_pages: new_total_pages
-                    });
-                }else{
-                    update.setState({
-                        total_pages: new_total_pages
-                    });
-                }
-            }else{
-                update.setState({
-                    page :1,
-                    total_pages: 1
-                });
-            }
+                            let new_total_pages = Math.ceil(update.state.tasks.length / update.props.limit);
+
+                            if( new_total_pages >= 1) {
+                                if( update.state.page > new_total_pages){
+                                    update.setState({
+                                        page: new_total_pages,
+                                        total_pages: new_total_pages
+                                    });
+                                }else{
+                                    update.setState({
+                                        total_pages: new_total_pages
+                                    });
+                                }
+                            }else{
+                                update.setState({
+                                    page :1,
+                                    total_pages: 1
+                                });
+                            }
+                        });
+                    }, 250)
         });
 
     };
 
     render() {
+
+        if( this.state.query === ""  && (this.props.refreshTasks.length !== this.state.tasks.length) ){
+            this.updateTasksAsync();
+        }
+
         let tasks = this.state.tasks.map((task, i) => {
             if(i >= ((this.state.page - 1) * this.props.limit) && i < (this.state.page * this.props.limit)){
                 return (<Task task_info={task} key={i}
@@ -287,7 +327,10 @@ class Task extends React.Component {
     render() {
         return (
             <div>
-                <button type="button" className="list-group-item" onClick={this.open}>{this.props.task_info.task_name}
+                <button type="button" className="list-group-item" onClick={this.open}>
+                    <b>{this.props.task_info.course_id + " - " + this.props.task_info.task_name}</b>
+                    <br/>
+                    { ["simulation", " graph theory", " longest path", " sorting"].toString() }
                 </button>
                 <Modal className="modal-container"
                     show={this.state.showModal}
@@ -379,9 +422,10 @@ class BankCourse extends React.Component {
     render() {
         return (
             <div>
-                <button type="button" className="list-group-item">{this.props.name}
-                <a class="pull-right" onClick={this.deleteCourse} >
-                    <span class="glyphicon glyphicon-remove"></span>
+                <button type="button" className="list-group-item">
+                    <b>{this.props.name}</b>
+                <a className="pull-right" onClick={this.deleteCourse} >
+                    <span className="glyphicon glyphicon-remove"></span>
                 </a>
               </button>
             </div>
@@ -425,6 +469,9 @@ class CourseAutosuggest extends React.Component {
         $.post( "/plugins/problems_bank/api/bank_courses", { "course_id": course_id }, function( data ) {
             updateParent()
         });
+        this.setState({
+            value: ''
+        });
     };
 
     render() {
@@ -448,7 +495,7 @@ class CourseAutosuggest extends React.Component {
                 />
               </Col>
               <Col md={2}>
-                <button onClick={this.addCourse} class="btn btn-primary">
+                <button onClick={this.addCourse} className="btn btn-primary">
                     Add course to bank
                 </button>
               </Col>
@@ -480,9 +527,24 @@ class BankCourseList extends React.Component {
             this.setState({
                 courses
             });
-            this.setState({
-                total_pages: Math.ceil(this.state.courses.length / this.props.limit)
-            });
+            if(Math.ceil(this.state.courses.length / this.props.limit) === 0){
+                this.setState({
+                    total_pages: 1,
+                    page: 1
+                });
+            }else{
+                this.setState({
+                    total_pages: Math.ceil(this.state.courses.length / this.props.limit),
+                    page: 1
+                });
+            }
+        });
+    }
+
+    updateTasksAsync() {
+        let updateParent = this.props.callbackParent;
+        $.getJSON("/plugins/problems_bank/api/bank_tasks").then((tasks) => {
+            updateParent(tasks);
         });
     }
 
@@ -497,11 +559,13 @@ class BankCourseList extends React.Component {
     componentDidMount() {
         this.updateBankCoursesAsync();
         this.updateAvailableCoursesAsync();
+        this.updateTasksAsync();
     }
 
     onChildChanged(){
         this.updateBankCoursesAsync();
         this.updateAvailableCoursesAsync();
+        this.updateTasksAsync();
     }
 
     onPageChange(page) {
