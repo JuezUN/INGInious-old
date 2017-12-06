@@ -62,7 +62,7 @@ def on_task_editor_submit(course, taskid, task_data, task_fs):
 
     grader_test_cases = CourseEditTask.dict_from_prefix("grader_test_cases", task_data) or OrderedDict()
 
-    # Remove test-case dirty entries.
+    # Transform grader_test_cases[] entries into an actual array (they are sent as separate keys).
     keys_to_remove = [key for key, _ in task_data.items() if key.startswith("grader_test_cases[")]
     for key in keys_to_remove:
         del task_data[key]
