@@ -10,7 +10,7 @@ from inginious.frontend.webapp.pages.utils import INGIniousAuthPage, INGIniousPa
 from inginious.frontend.webapp.pages.course_admin.utils import INGIniousAdminPage
 from inginious.common.filesystems.local import LocalFSProvider
 from inginious.common.course_factory import CourseNotFoundException, CourseUnreadableException, InvalidNameException
-from .utils import convert_task_dict_to_sorted_list, project_detail_user_tasks
+from .utils import convert_task_dict_to_sorted_list, project_detail_user_tasks, convert_task_dict_to_sorted_list_with_parameters
 
 
 _BASE_RENDERER_PATH = 'frontend/webapp/plugins/statistics'
@@ -135,8 +135,12 @@ class TrialsAndBestGradeApi(UserStatisticsApi):
             }
         ])
 
-        return 200, list(best_submissions)
+        course = self.course_factory.get_course(course_id)
+        parameters = ["grade", "result", "tried"]
+        best_submissions = convert_task_dict_to_sorted_list_with_parameters(course, best_submissions, parameters)
 
+        return 200, best_submissions
+    
 
 class BarSubmissionsPerTasksApi(UserStatisticsApi):
     def statistics(self):
@@ -177,32 +181,8 @@ class BarSubmissionsPerTasksApi(UserStatisticsApi):
         ])
 
         course = self.course_factory.get_course(course_id)
-        course_tasks = course.get_tasks()
-        sorted_tasks = sorted(course_tasks.values(), key=lambda task: task.get_order())
-
-        task_id_to_statistics = {}
-        for element in submissions_per_task:
-            task_id = element["task_id"]
-
-            if task_id not in task_id_to_statistics:
-                task_id_to_statistics[task_id] = []
-
-            task_id_to_statistics[task_id].append({
-                "count": element["count"],
-                "summary_result": element["summary_result"]
-            })
-
-        submissions_per_task = []
-
-        for task in sorted_tasks:
-            _id = task.get_id()
-            verdicts = task_id_to_statistics.get(_id, [])
-            for verdict in verdicts:
-                submissions_per_task.append({
-                    "task_id": _id,
-                    "summary_result": verdict["summary_result"],
-                    "count": verdict["count"]
-                })
+        parameters = ["count", "summary_result"]
+        submissions_per_task = convert_task_dict_to_sorted_list_with_parameters(course, submissions_per_task, parameters)
 
         return 200, submissions_per_task
 
@@ -289,32 +269,9 @@ class BestSubmissionsByVerdictApi(StatisticsAdminApi):
         course = self.get_course_and_check_rights(course_id)
 
         best_statistics_by_verdict = self.get_best_statistics_by_verdict(course)
-        course_tasks = course.get_tasks()
-        sorted_tasks = sorted(course_tasks.values(), key=lambda task: task.get_order())
+        parameters = ["count", "summary_result"]
+        best_statistics_by_verdict = convert_task_dict_to_sorted_list_with_parameters(course, best_statistics_by_verdict, parameters)
 
-        task_id_to_statistics = {}
-        for element in best_statistics_by_verdict:
-            task_id = element["task_id"]
-
-            if task_id not in task_id_to_statistics:
-                task_id_to_statistics[task_id] = []
-
-            task_id_to_statistics[task_id].append({
-                "count": element["count"],
-                "summary_result": element["summary_result"]
-            })
-
-        best_statistics_by_verdict = []
-
-        for task in sorted_tasks:
-            _id = task.get_id()
-            verdicts = task_id_to_statistics.get(_id, [])
-            for verdict in verdicts:
-                best_statistics_by_verdict.append({
-                    "task_id": _id,
-                    "summary_result": verdict["summary_result"],
-                    "count": verdict["count"]
-                })
         return 200, best_statistics_by_verdict
 
 
@@ -351,33 +308,9 @@ class SubmissionsByVerdictApi(StatisticsAdminApi):
         course = self.get_course_and_check_rights(course_id)
 
         statistics_by_verdict = self.get_statistics_by_verdict(course)
-        course_tasks = course.get_tasks()
-        sorted_tasks = sorted(course_tasks.values(), key=lambda task: task.get_order())
+        parameters = ["count", "summary_result"]
+        statistics_by_verdict = convert_task_dict_to_sorted_list_with_parameters(course, statistics_by_verdict, parameters)
 
-        task_id_to_statistics = {}
-        for element in statistics_by_verdict:
-            task_id = element["task_id"]
-
-            if task_id not in task_id_to_statistics:
-                task_id_to_statistics[task_id] = []
-
-            task_id_to_statistics[task_id].append({
-                "count": element["count"],
-                "summary_result": element["summary_result"]
-            })
-
-
-        statistics_by_verdict = []
-
-        for task in sorted_tasks:
-            _id = task.get_id()
-            verdicts = task_id_to_statistics.get(_id, [])
-            for verdict in verdicts:
-                statistics_by_verdict.append({
-                    "task_id": _id,
-                    "summary_result": verdict["summary_result"],
-                    "count": verdict["count"]
-                })
         return 200, statistics_by_verdict
 
 

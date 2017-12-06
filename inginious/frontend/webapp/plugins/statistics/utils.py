@@ -42,6 +42,43 @@ def convert_task_dict_to_sorted_list(course, task_dict, key_name, include_task_i
         generate_task_element(task) for task in sorted_tasks if include_all_tasks or task.get_id() in task_dict
     ]
 
+def convert_task_dict_to_sorted_list_with_parameters(course, task_dic, parameters):
+
+    course_tasks = course.get_tasks()
+    sorted_tasks = sorted(course_tasks.values(), key=lambda task: task.get_order())
+
+    task_id_to_statistics = {}
+    for element in task_dic:
+
+        if "task_id" in element:
+            task_id = element["task_id"]
+        else:
+            task_id = element["taskid"]
+
+        if task_id not in task_id_to_statistics:
+            task_id_to_statistics[task_id] = []
+
+        temp_dict = {}
+        temp_dict["task_id"] = task_id
+        for parameter in parameters:
+            temp_dict[parameter] = element[parameter]
+        task_id_to_statistics[task_id].append( temp_dict )
+
+    task_list = []
+
+    for task in sorted_tasks:
+        _id = task.get_id()
+        task_name = task.get_name()
+        verdicts = task_id_to_statistics.get(_id, [])
+        for verdict in verdicts:
+            temp_dict = {}
+            temp_dict["task_id"] = _id
+            temp_dict["task_name"] = task_name
+            for parameter in parameters:
+                temp_dict[parameter] = verdict[parameter]
+            task_list.append( temp_dict )
+
+    return task_list
 
 def project_detail_user_tasks(user_tasks):
     return [{

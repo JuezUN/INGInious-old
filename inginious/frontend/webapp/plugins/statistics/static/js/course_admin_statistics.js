@@ -10,7 +10,7 @@
     var errorContainer = $("#plotErrorContainer");
 
     function getDataNormalized(data_entry, data_count_obj){
-        return data_entry.count/data_count_obj[data_entry.task_id]*100;
+        return data_entry.count/data_count_obj[data_entry.task_name]*100;
     }
 
     function getData(data_entry, data_count_obj){
@@ -30,7 +30,7 @@
       for(var i = 0; i < data.length; ++i) {
 
         if(data[i].summary_result === verdict){
-            plotData.x.push(data[i].task_id);
+            plotData.x.push(data[i].task_name);
             plotData.y.push(get_function(data[i], data_count_obj));
         }
       }
@@ -41,15 +41,13 @@
 
       var data_count_obj = {};
 
-      var yLabel = normalized ? "Percentage of tasks" : "Number of tasks";
-
-      var tasks_ids = [];
+      var tasks_names = [];
       for(var i = 0; i < data.length; i++){
-        if(data_count_obj[data[i].task_id] == null){
-            data_count_obj[data[i].task_id] = 0;
-            tasks_ids.push(data[i].task_id);
+        if(data_count_obj[data[i].task_name] == null){
+            data_count_obj[data[i].task_name] = 0;
+            tasks_names.push(data[i].task_name);
         }
-        data_count_obj[data[i].task_id] += data[i].count;
+        data_count_obj[data[i].task_name] += data[i].count;
       }
 
       var get_function = normalized ? getDataNormalized : getData;
@@ -78,7 +76,7 @@
         xaxis: {
           title: 'Tasks',
           categoryorder : "array",
-          categoryarray : tasks_ids,
+          categoryarray : tasks_names,
           titlefont:{
             size: 16,
             color: COLOR_LABEL,
@@ -86,7 +84,7 @@
           }
         },
         yaxis: {
-          title: yLabel,
+          title: normalized ? "Percentage of tasks" : "Number of tasks",
           titlefont: {
             size: 16,
             color: COLOR_LABEL
