@@ -8,10 +8,15 @@ def init(plugin_manager, course_factory, client, config):
 
     def on_task_updated(courseid, taskid, new_content):
         task_name = new_content["name"]
+        descriptor = course_factory.get_course(courseid)._task_factory.get_task_descriptor_content(courseid, taskid)
+        task_author = descriptor["author"]
+        task_context = descriptor["context"]
         tags = new_content.get("tags", [])
         task_data = {
             "task_name": task_name,
             "task_id": taskid,
+            "task_author": task_author,
+            "task_context": task_context,
             "course_id": courseid,
             "tags": tags
         }
