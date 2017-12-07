@@ -37,7 +37,7 @@
       return plotData;
     }
 
-    function plotVerdictStatisticsChart(id_div, data, statistic_title, normalized) {
+    function plotVerdictStatisticsChart(id_div, data, statistic_title, normalized, api_url, generateTable) {
 
       var data_count_obj = {};
 
@@ -67,20 +67,21 @@
       var accepted_data = createObjectToPlotData(data, data_count_obj,
       "ACCEPTED", COLOR_ACCEPTED, get_function);
 
-      var data = [compilation_error_data, time_limit_data, memory_limit_data,
+      var plotData = [compilation_error_data, time_limit_data, memory_limit_data,
+
       runtime_error_data, wrong_answer_data, internal_error_data, accepted_data];
 
       var layout = {
         barmode: 'stack',
         title: statistic_title,
+        hovermode: 'closest',
         xaxis: {
           title: 'Tasks',
           categoryorder : "array",
           categoryarray : tasks_names,
           titlefont:{
             size: 16,
-            color: COLOR_LABEL,
-
+            color: COLOR_LABEL
           }
         },
         yaxis: {
@@ -93,7 +94,27 @@
       };
 
       Plotly.purge(id_div);
-      Plotly.newPlot(id_div, data, layout);
+      Plotly.newPlot(id_div, plotData, layout);
+
+      var container = $("#" + id_div);
+
+
+      container.unbind('plotly_click');
+      container[0].on('plotly_click', function(data){
+          var point = data.points[0];
+          var pointNumber = point.pointNumber;
+          var taskId = point.data.x[pointNumber];
+          var summaryResult = point.data.name;
+          $.get(api_url, {
+              course_id: adminStatistics.courseId,
+              task_id: taskId,
+              summary_result: summaryResult
+          }, generateTable, "json").fail(function(){
+              errorContainer.html(createAlertHtml("alert-danger",
+                  "Something went wrong while fetching the submission list. Try again later."));
+          });
+      });
+
     }
 
     var GradeDistributionStatistic = (function() {
@@ -189,8 +210,17 @@
 
               var title = "Submissions Vs Verdicts (ALL)";
 
+              var api_url = "/api/stats/admin/submissions_verdict_details";
 
-              plotVerdictStatisticsChart(this.containerId, data, title, this.toggle_normalize_submissions_per_tasks);
+              var tableGenerator = generateVerdictSubmissionTable;
+
+              var table_id = "submissionsVerdictTable";
+
+
+              plotVerdictStatisticsChart(this.containerId, data,title,
+                  this.toggle_normalize_submissions_per_tasks, api_url, function(result){
+                    tableGenerator(table_id, result);
+                  });
 
         };
 
@@ -218,8 +248,14 @@
         BestSubmissionsVerdictStatistic.prototype._plotData = function(data) {
 
               var title = "Submissions Vs Verdicts (BEST)";
+              var api_url = "/api/stats/admin/best_submissions_verdict_details";
+              var tableGenerator = generateSubmissionTable;
+              var table_id = "bestSubmissionsVerdictTable";
 
-              plotVerdictStatisticsChart(this.containerId, data, title, this.toggle_normalize_best_submissions_per_tasks);
+              plotVerdictStatisticsChart(this.containerId, data, title,
+                  this.toggle_normalize_best_submissions_per_tasks, api_url, function(result){
+                    tableGenerator(table_id, result);
+                  });
 
         };
 
