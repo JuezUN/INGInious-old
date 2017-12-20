@@ -1,5 +1,6 @@
 import web
 import uuid
+import json
 from inginious.frontend.webapp.pages.course_admin.utils import INGIniousAdminPage
 from pymongo.errors import DuplicateKeyError
 
@@ -105,15 +106,15 @@ class SearchTaskApi(AdminApi):
 
         tasks = []
         for bank_course_id in bank_course_ids:
-            course_tasks = self.course_factory.get_course(bank_course_id).get_tasks()
-            for task in course_tasks:
-                task_descriptor = self.course_factory.get_course(bank_course_id)._task_factory.get_task_descriptor_content(bank_course_id, course_tasks[task].get_id())
-                tasks.append({"course_id": course_tasks[task].get_course_id(), "task_id": course_tasks[task].get_id(),
-                              "task_name": course_tasks[task].get_name(), "task_author": task_descriptor["author"],
-                              "task_context": task_descriptor["context"] })
+            search_tasks = self.database.tasks_cache.aggregate([
+                {"$match": {"course_id": bank_course_id }}
+            ])
+            for task in search_tasks:
+                dict = {"course_id": task["course_id"], "task_id": task["task_id"], "task_name": task["task_name"],
+                        "task_author": task["task_author"], "task_context": task["task_context"], "tags": task["tags"]}
+                tasks.append(dict)
 
         return 200, tasks
-
 
 class FilterTasksApi(AdminApi):
     def API_POST(self):
@@ -125,18 +126,25 @@ class FilterTasksApi(AdminApi):
 
         tasks = []
         for bank_course_id in bank_course_ids:
-            course_tasks = self.course_factory.get_course(bank_course_id).get_tasks()
-            for task in course_tasks:
-                task_id = course_tasks[task].get_id()
-                task_name = course_tasks[task].get_name()
-                if task_query.lower() in task_name.lower():
-                    task_descriptor = self.course_factory.get_course(bank_course_id)._task_factory.get_task_descriptor_content(bank_course_id, course_tasks[task].get_id())
-                    tasks.append({"course_id": course_tasks[task].get_course_id(), "task_id": task_id,
-                                  "task_name": task_name, "task_author": task_descriptor["author"],
-                                  "task_context": task_descriptor["context"] })
+            filter_tasks = self.database.tasks_cache.aggregate([
+                {"$match":
+                    {
+                      "course_id": bank_course_id,
+                      "$or": [
+                               {"task_name": {"$regex": ".*" + task_query + ".*"}},
+                               #TODO add filter for tags
+                               #{"tags": {"$in": [{"$regex": ".*" + task_query + ".*"}, "$tags"]}}
+                             ]
+                    }
+                }
+
+            ])
+            for task in filter_tasks:
+                dict = {"course_id": task["course_id"], "task_id": task["task_id"], "task_name": task["task_name"],
+                        "task_author": task["task_author"], "task_context": task["task_context"], "tags": task["tags"]}
+                tasks.append(dict)
 
         return 200, tasks
-
 
 class BankPage(INGIniousAdminPage):
     def _list_files_recursive(self, folder):
@@ -166,3 +174,9 @@ class BankPage(INGIniousAdminPage):
         return (
             self.template_helper.get_custom_renderer(_BASE_RENDERER_PATH).index()
         )
+
+def dumper(obj):
+    try:
+        return obj.toJSON()
+    except:
+        return obj.__dict__
