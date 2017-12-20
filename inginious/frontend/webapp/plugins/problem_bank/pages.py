@@ -111,14 +111,18 @@ class SearchTaskApi(AdminApi):
         tasks = []
         for bank_course_id in bank_course_ids:
             search_tasks = self.database.tasks_cache.aggregate([
-                {"$match": {"course_id": bank_course_id }}
+                {"$match":
+                     {
+                         "course_id": bank_course_id
+                     }
+                }
             ])
             for task in search_tasks:
                 dict = {"course_id": task["course_id"], "task_id": task["task_id"], "task_name": task["task_name"],
                         "task_author": task["task_author"], "task_context": task["task_context"], "tags": task["tags"]}
                 tasks.append(dict)
 
-        return 200, tasks
+        return 200, sorted(tasks, key=lambda k: (k['course_id'], k['task_id']))
 
 class FilterTasksApi(AdminApi):
     def API_POST(self):
@@ -130,25 +134,44 @@ class FilterTasksApi(AdminApi):
 
         tasks = []
         for bank_course_id in bank_course_ids:
-            filter_tasks = self.database.tasks_cache.aggregate([
-                {"$match":
-                    {
-                      "course_id": bank_course_id,
-                      "$or": [
-                               {"task_name": {"$regex": ".*" + task_query + ".*"}},
-                               #TODO fix filter for complete tag
-                               {"tags": {"$in": [task_query]}}
-                             ]
+            ids_tasks = self.database.tasks_cache.aggregate([
+                    {"$match":
+                        {
+                            "course_id": bank_course_id
+                        }
+                    },
+                    {"$unwind":
+                        {
+                            "path": "$tags",
+                            "preserveNullAndEmptyArrays": True
+                        }
+                    },
+                    {"$match":
+                        {"$or":
+                            [{"course_id": {"$regex": ".*" + task_query + ".*"}},
+                             {"task_name": {"$regex": ".*" + task_query + ".*"}},
+                             {"tags": {"$regex": ".*" + task_query + ".*"}}]
+                        }
+                    },
+                    {"$group":
+                         {"_id": "$_id"}
                     }
-                }
-
             ])
-            for task in filter_tasks:
-                dict = {"course_id": task["course_id"], "task_id": task["task_id"], "task_name": task["task_name"],
-                        "task_author": task["task_author"], "task_context": task["task_context"], "tags": task["tags"]}
-                tasks.append(dict)
 
-        return 200, tasks
+            for id_task in ids_tasks:
+                task_result = self.database.tasks_cache.aggregate([
+                    {"$match":
+                        {
+                            "_id": id_task["_id"]
+                        }
+                    }
+                ])
+                for task in task_result:
+                    dict = {"course_id": task["course_id"], "task_id": task["task_id"], "task_name": task["task_name"],
+                            "task_author": task["task_author"], "task_context": task["task_context"], "tags": task["tags"]}
+                    tasks.append(dict)
+
+        return 200, sorted(tasks, key=lambda k: (k['course_id'], k['task_id']))
 
 class BankPage(INGIniousAdminPage):
     def _list_files_recursive(self, folder):
