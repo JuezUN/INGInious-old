@@ -127,6 +127,12 @@ class TaskList extends React.Component{
         });
     }
 
+    onChildChangedClose(isVisible){
+        this.setState({
+           isVisible
+        });
+    }
+
     onPageChange(page) {
         this.setState({page});
     }
@@ -207,7 +213,8 @@ class TaskList extends React.Component{
                      onChange={this.onPageChange}
                 />
 
-                <CustomAlert message={this.state.data["message"]} isVisible={this.state.isVisible} />
+                <CustomAlert message={this.state.data["message"]} isVisible={this.state.isVisible}
+                             callbackParent={(isVisible) => this.onChildChangedClose(isVisible)}/>
             </div>
         );
     }
@@ -384,6 +391,10 @@ class CustomAlert extends React.Component {
 
     handleAlertDismiss = () => {
         this.props.isVisible = false;
+
+        let updateParent = this.props.callbackParent;
+        updateParent(this.props.isVisible);
+
         this.forceUpdate();
     };
 
