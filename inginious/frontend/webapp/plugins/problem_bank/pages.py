@@ -50,6 +50,10 @@ class CopyTaskApi(AdminApi):
 
         try:
             target_fs.copy_to(task.get_fs().prefix, copy_id)
+            if "task_cache" in self.database.collection_names():
+                #TODO copy task in cache
+                #self.database.tasks_cache.insert({"courseid": course_id})
+                pass
         except NotFoundException:
             raise api.APIError(400, {"error": "the copy_id made an invalid path"})
 
@@ -132,8 +136,8 @@ class FilterTasksApi(AdminApi):
                       "course_id": bank_course_id,
                       "$or": [
                                {"task_name": {"$regex": ".*" + task_query + ".*"}},
-                               #TODO add filter for tags
-                               #{"tags": {"$in": [{"$regex": ".*" + task_query + ".*"}, "$tags"]}}
+                               #TODO fix filter for complete tag
+                               {"tags": {"$in": [task_query]}}
                              ]
                     }
                 }
@@ -174,9 +178,3 @@ class BankPage(INGIniousAdminPage):
         return (
             self.template_helper.get_custom_renderer(_BASE_RENDERER_PATH).index()
         )
-
-def dumper(obj):
-    try:
-        return obj.toJSON()
-    except:
-        return obj.__dict__
