@@ -337,7 +337,7 @@ class Task extends React.Component {
                 <button type="button" className="list-group-item" onClick={this.open}>
                     <b>{this.props.task_info.course_id + " - " + this.props.task_info.task_name}</b>
                     <br/>
-                    { ["simulation", " graph theory", " longest path", " sorting"].toString() }
+                    {this.props.task_info.tags.join(', ')}
                 </button>
                 <Modal className="modal-container"
                     show={this.state.showModal}
