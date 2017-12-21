@@ -469,8 +469,8 @@ class BankCourse extends React.Component {
 
                     <Modal.Body>
                       <Alert bsStyle="warning">
-                          <h5><strong>Are you sure you want to remove the bank privileges from this course?</strong></h5>
-                          <h6>* The course will not be remove, only the permits to be a bank will be removed.</h6>
+                          <h5><strong>Are you sure that you want to remove the bank privileges from this course?</strong></h5>
+                          <h6>* The course won't be remove, only the permits to be a bank will be removed.</h6>
                       </Alert>
                     </Modal.Body>
 
