@@ -1,6 +1,7 @@
 import logging
 import json
 import os.path
+from . import pages
 from inginious.frontend.webapp.plugins.utils import create_static_resource_page
 _PLUGIN_PATH = os.path.dirname(__file__)
 _BASE_RENDERER_PATH = _PLUGIN_PATH
@@ -11,8 +12,8 @@ _logger = logging.getLogger("inginious.frontend.webapp.plugins.task_cache")
 def tag_selection_tab(course, taskid, task_data, template_helper):
     tab_id = 'tab_task_tags'
     link = '<i class="fa fa-tags fa-fw"></i>&nbsp; Tags'
-    template_helper.add_css("/static/task_cache/css/bootstrap-tagsinput.css")
-    template_helper.add_javascript("/static/task_cache/js/bootstrap-tagsinput.js")
+    template_helper.add_css("https://cdn.jsdelivr.net/bootstrap.tagsinput/0.4.2/bootstrap-tagsinput.css")
+    template_helper.add_javascript("https://cdn.jsdelivr.net/bootstrap.tagsinput/0.4.2/bootstrap-tagsinput.min.js")
     tags = task_data.get('tags', "")
     content = template_helper.get_custom_renderer(_BASE_RENDERER_PATH,
                                                   layout=False).tags(course, taskid, task_data, tags)
@@ -73,6 +74,7 @@ def init(plugin_manager, course_factory, client, config):
     plugin_manager.get_database().tasks_cache.create_index([("course_id", 1), ("task_id", 1)], unique=True)
 
     plugin_manager.add_page(r'/static/task_cache/(.*)', create_static_resource_page(_BASE_STATIC_FOLDER))
+    plugin_manager.add_page('/api/tags', pages.TagsApi)
     plugin_manager.add_hook('task_editor_tab', tag_selection_tab)
     plugin_manager.add_hook('task_updated', on_task_updated)
     plugin_manager.add_hook('task_deleted', on_task_deleted)
