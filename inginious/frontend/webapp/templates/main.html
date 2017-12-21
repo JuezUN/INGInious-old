@@ -1,4 +1,4 @@
-$def with (open_courses,registrable_courses,submissions,success)
+$def with (open_courses,registrable_courses,submissions,success, additional_divs)
 
 $#
 $# This file is part of INGInious. See the LICENSE and the COPYRIGHTS files for
@@ -114,3 +114,8 @@ $else:
         </div>
         <div class="col-sm-12"><button type="submit" class="btn btn-block btn-default">Register</button></div>
     </form>
+
+$for div_id, div_content in additional_divs:
+    <div id="$div_id">
+        $:div_content
+    </div>
