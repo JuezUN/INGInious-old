@@ -50,10 +50,17 @@ class CopyTaskApi(AdminApi):
 
         try:
             target_fs.copy_to(task.get_fs().prefix, copy_id)
-            if "task_cache" in self.database.collection_names():
-                #TODO copy task in cache
-                #self.database.tasks_cache.insert({"courseid": course_id})
-                pass
+
+            if "tasks_cache" in self.database.collection_names():
+                task_to_copy = self.database.tasks_cache.find_one({ "course_id": bank_id, "task_id": task_id })
+
+                self.database.tasks_cache.insert({ "course_id": target_id, "task_id": copy_id,
+                                                   "task_name": task_to_copy["task_name"],
+                                                   "tags": task_to_copy["tags"],
+                                                   "task_context": task_to_copy["task_context"],
+                                                   "task_author": task_to_copy["task_author"]
+                                                   })
+
         except NotFoundException:
             raise api.APIError(400, {"error": "the copy_id made an invalid path"})
 
@@ -159,17 +166,12 @@ class FilterTasksApi(AdminApi):
             ])
 
             for id_task in ids_tasks:
-                task_result = self.database.tasks_cache.aggregate([
-                    {"$match":
-                        {
-                            "_id": id_task["_id"]
-                        }
-                    }
-                ])
-                for task in task_result:
-                    dict = {"course_id": task["course_id"], "task_id": task["task_id"], "task_name": task["task_name"],
-                            "task_author": task["task_author"], "task_context": task["task_context"], "tags": task["tags"]}
-                    tasks.append(dict)
+
+                task = self.database.tasks_cache.find_one({ "_id": id_task["_id"] })
+
+                dict = {"course_id": task["course_id"], "task_id": task["task_id"], "task_name": task["task_name"],
+                        "task_author": task["task_author"], "task_context": task["task_context"], "tags": task["tags"]}
+                tasks.append(dict)
 
         return 200, sorted(tasks, key=lambda k: (k['course_id'], k['task_id']))
 
