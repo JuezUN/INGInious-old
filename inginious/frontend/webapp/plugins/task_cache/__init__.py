@@ -1,8 +1,23 @@
 import logging
 import json
+import os.path
+from inginious.frontend.webapp.plugins.utils import create_static_resource_page
+_PLUGIN_PATH = os.path.dirname(__file__)
+_BASE_RENDERER_PATH = _PLUGIN_PATH
+_BASE_STATIC_FOLDER = os.path.join(_PLUGIN_PATH, 'static')
+_logger = logging.getLogger("inginious.frontend.webapp.plugins.task_cache")
 
-_BASE_RENDERER_PATH = 'frontend/webapp/plugins/hooks_example'
-_logger = logging.getLogger("inginious.frontend.webapp.plugins.hooks_example")
+
+def tag_selection_tab(course, taskid, task_data, template_helper):
+    tab_id = 'tab_task_tags'
+    link = '<i class="fa fa-tags fa-fw"></i>&nbsp; Tags'
+    template_helper.add_css("/static/task_cache/css/bootstrap-tagsinput.css")
+    template_helper.add_javascript("/static/task_cache/js/bootstrap-tagsinput.js")
+    task_tags = task_data.get('task_tags', "")
+    content = template_helper.get_custom_renderer(_BASE_RENDERER_PATH,
+                                                  layout=False).task_tags(course, taskid, task_data, task_tags)
+    return tab_id, link, content
+
 
 def init(plugin_manager, course_factory, client, config):
 
@@ -11,14 +26,14 @@ def init(plugin_manager, course_factory, client, config):
         descriptor = course_factory.get_course(courseid)._task_factory.get_task_descriptor_content(courseid, taskid)
         task_author = descriptor["author"]
         task_context = descriptor["context"]
-        tags = new_content.get("tags", [])
+        task_tags = new_content.get("task_tags", "").split(',')
         task_data = {
             "task_name": task_name,
             "task_id": taskid,
             "task_author": task_author,
             "task_context": task_context,
             "course_id": courseid,
-            "tags": tags
+            "task_tags": task_tags
         }
 
         data_filter = {
@@ -54,8 +69,11 @@ def init(plugin_manager, course_factory, client, config):
 
     if "tasks_cache" not in plugin_manager.get_database().collection_names():
         plugin_manager.get_database().create_collection("tasks_cache")
+
     plugin_manager.get_database().tasks_cache.create_index([("course_id", 1), ("task_id", 1)], unique=True)
 
+    plugin_manager.add_page(r'/static/task_cache/(.*)', create_static_resource_page(_BASE_STATIC_FOLDER))
+    plugin_manager.add_hook('task_editor_tab', tag_selection_tab)
     plugin_manager.add_hook('task_updated', on_task_updated)
     plugin_manager.add_hook('task_deleted', on_task_deleted)
     plugin_manager.add_hook('course_updated', on_course_updated)
