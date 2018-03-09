@@ -78,6 +78,12 @@ function colorizeStaticCode()
     });
 }
 
+var lintingOptions = true;
+
+function setLintingOptions(newOptions) {
+    lintingOptions = newOptions;
+}
+
 //Register and init a code editor (ace)
 function registerCodeEditor(textarea, lang, lines)
 {
@@ -115,7 +121,7 @@ function registerCodeEditor(textarea, lang, lines)
         cursorHeight:      0.85,
         viewportMargin:    20,
         theme:             "inginious",
-        lint:              true,
+        lint:              lintingOptions,
         extraKeys:         { "Ctrl-Space": "autocomplete", Tab: tabToSpaces }
     });
 

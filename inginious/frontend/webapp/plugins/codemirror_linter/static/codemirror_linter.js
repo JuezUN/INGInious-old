@@ -12,7 +12,7 @@
   "use strict";
   // declare global: JSHINT
 
-  function validator(text, options) {
+  function validator(text, callback, options, editor) {
     if (!window.JSHINT) {
       if (window.console) {
         window.console.error("Error: window.JSHINT not defined, CodeMirror JavaScript linting cannot run.");
@@ -24,6 +24,12 @@
     JSHINT(text, options, options.globals);
     var errors = JSHINT.data().errors, result = [];
     if (errors) parseErrors(errors, result);
+    
+    function magic(){
+      callback(result);
+    }
+
+    setTimeout(magic, 2000);
     return result;
   }
 
@@ -60,4 +66,8 @@
       }
     }
   }
+});
+
+setLintingOptions({
+  async: true
 });
