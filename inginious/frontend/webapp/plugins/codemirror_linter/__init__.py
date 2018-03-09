@@ -10,10 +10,15 @@ _BASE_RENDERER_PATH = _PLUGIN_PATH
 _BASE_STATIC_FOLDER = os.path.join(_PLUGIN_PATH, 'static')
 
 
-def additional_javascript():
+def linter_base_framework():
+    return os.path.join('/static', 'codemirror_linter', 'lint.js')
+
+
+def custom_linter():
     return os.path.join('/static', 'codemirror_linter', 'codemirror_linter.js')
 
 
 def init(plugin_manager, _, _2, _3):
     plugin_manager.add_page(r'/static/codemirror_linter/(.*)', create_static_resource_page(_BASE_STATIC_FOLDER))
-    plugin_manager.add_hook("javascript_footer", additional_javascript)
+    plugin_manager.add_hook("javascript_footer", linter_base_framework)
+    plugin_manager.add_hook("javascript_footer", custom_linter)

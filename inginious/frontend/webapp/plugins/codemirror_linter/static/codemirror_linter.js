@@ -1,4 +1,4 @@
 var someGlobal = 0;
 
-console.log(someGlobal);
+alert(someGlobal);
 someGlobal += 1;
