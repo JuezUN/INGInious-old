@@ -6,6 +6,7 @@
 from collections import OrderedDict
 
 import web
+import yaml
 
 from inginious.frontend.webapp.pages.course_admin.utils import make_csv, INGIniousAdminPage
 
@@ -22,6 +23,10 @@ class CourseTaskListPage(INGIniousAdminPage):
         """ POST request """
         course, _ = self.get_course_and_check_rights(courseid)
         data = web.input(task=[])
+
+        if "new_task_id" in data:
+            # Create new task
+           self.task_factory.update_task_descriptor_content(courseid, data["new_task_id"], yaml.load(open("task.yaml", "r")), "yaml")
 
         if "task" in data:
             # Change tasks order
