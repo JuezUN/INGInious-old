@@ -992,7 +992,6 @@ function changeSubmissionLanguage(problemId){
     var mode = CodeMirror.findModeByName(language);
     editor.setOption("mode", mode.mime);
     CodeMirror.autoLoadMode(editor, mode["mode"]);
-    editor.updateLintStatus([]);
 }
 
 function convertInginiousLanguageToCodemirror(inginiousLanguage) {
@@ -1126,43 +1125,6 @@ var PythonTutor = (function () {
 function visualizeCode(language, problemId){
     var pythonTutor = new PythonTutor(problemId, language);
     pythonTutor.visualize();
-}
-
-var lintServerUrl = "http://localhost:4567/";
-
-function lintCode(language, problemId, callback){
-  if(language == "plain")
-    language = getLanguageForProblemId(problemId);
-  var editor =  getEditorForProblemId(problemId);
-  var code = editor.getValue();
-  var apiUrl = lintServerUrl + language;
-  callback = callback || getCallbackForLanguage(language, editor);
-
-  $.post(apiUrl, { code: code }, callback);
-}
-
-function getCallbackForLanguage(language, editor){
-  if(language == "java") return updateLintingCallback(editor);
-  if(language == "python") return updateLintingCallback(editor);
-  if(language == "cpp") return updateLintingCallback(editor);
-  if(language == "c") return updateLintingCallback(editor);
-  return defaultCallback;
-}
-
-var updateLintingCallback = function(editor){
-  return function(response, status){
-    var errors_and_warnings = JSON.parse(response);
-    editor.updateLintStatus(errors_and_warnings);
-  }
-}
-
-function makeNewTabFromResponseCallback(response, status){
-  var newTabUrl = "data:text/html," + window.encodeURIComponent(response);
-  var newWindow = window.open(newTabUrl, '_blank');
-}
-
-function defaultCallback(response, status){
-  alert(response + "\n\nresponse_status: " + status);
 }
 
 function runCustomTest (inputId) {
