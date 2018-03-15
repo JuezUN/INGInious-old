@@ -1,6 +1,72 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
+
+function mockLinter(language, code, callback, options, editor){
+  callback([
+    {
+      "message": "Missing semicolon.",
+      "severity": "warning",
+      "from": {
+        "line": 0,
+        "ch": 16,
+        "sticky": null
+      },
+      "to": {
+        "line": 0,
+        "ch": 17,
+        "sticky": null
+      }
+    },
+    {
+      "message": "Expected an identifier and instead saw ';'.",
+      "severity": "error",
+      "from": {
+        "line": 3,
+        "ch": 39,
+        "sticky": null
+      },
+      "to": {
+        "line": 3,
+        "ch": 43,
+        "sticky": null
+      }
+    },
+    {
+      "message": "'i' is already defined.",
+      "severity": "warning",
+      "from": {
+        "line": 8,
+        "ch": 13,
+        "sticky": null
+      },
+      "to": {
+        "line": 8,
+        "ch": 14,
+        "sticky": null
+      }
+    }
+  ]);
+}
+
+function webLinter(language, code, callback, options, editor){
+  var lintServerUrl = "http://localhost:4567/" + language;
+
+  function serverCallback(response, status){
+    var errors_and_warnings = JSON.parse(response);
+    callback(errors_and_warnings);
+  }
+
+  $.post(lintServerUrl, {code: code}, serverCallback);
+}
+
+
+function linterForLanguage(language) {
+  return function(code, callback, options, editor){
+    webLinter(language, code, callback, options, editor);    
+  }
+}
+
 (function (mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
     mod(require("../../lib/codemirror"));
@@ -10,62 +76,8 @@
     mod(CodeMirror);
 })(function (CodeMirror) {
   "use strict";
-  // declare global: JSHINT
 
-  function validator(text, callback, options, editor) {
-    if (!window.JSHINT) {
-      if (window.console) {
-        window.console.error("Error: window.JSHINT not defined, CodeMirror JavaScript linting cannot run.");
-      }
-      return [];
-    }
-    if (!options.indent) // JSHint error.character actually is a column index, this fixes underlining on lines using tabs for indentation
-      options.indent = 1; // JSHint default value is 4
-    JSHINT(text, options, options.globals);
-    var errors = JSHINT.data().errors, result = [];
-    if (errors) parseErrors(errors, result);
-    
-    function magic(){
-      callback(result);
-    }
-
-    setTimeout(magic, 2000);
-    return result;
-  }
-
-  CodeMirror.registerHelper("lint", "python", validator);
-
-  function parseErrors(errors, output) {
-    for (var i = 0; i < errors.length; i++) {
-      var error = errors[i];
-      if (error) {
-        if (error.line <= 0) {
-          if (window.console) {
-            window.console.warn("Cannot display JSHint error (invalid line " + error.line + ")", error);
-          }
-          continue;
-        }
-
-        var start = error.character - 1, end = start + 1;
-        if (error.evidence) {
-          var index = error.evidence.substring(start).search(/.\b/);
-          if (index > -1) {
-            end += index;
-          }
-        }
-
-        // Convert to format expected by validation service
-        var hint = {
-          message: error.reason,
-          severity: error.code ? (error.code.startsWith('W') ? "warning" : "error") : "error",
-          from: CodeMirror.Pos(error.line - 1, start),
-          to: CodeMirror.Pos(error.line - 1, end)
-        };
-
-        output.push(hint);
-      }
-    }
-  }
+  CodeMirror.registerHelper("lint", "python", linterForLanguage("python"));
 });
 
 setLintingOptions({
