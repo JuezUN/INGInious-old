@@ -31,6 +31,9 @@ function linterForLanguage(language) {
   "use strict";
 
   CodeMirror.registerHelper("lint", "python", linterForLanguage("python"));
+  CodeMirror.registerHelper("lint", "text/x-java", linterForLanguage("java"));
+  CodeMirror.registerHelper("lint", "text/x-c++src", linterForLanguage("cpp"));
+  CodeMirror.registerHelper("lint", "text/x-csrc", linterForLanguage("c"));
 });
 
 setLintingOptions({
