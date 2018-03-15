@@ -2,53 +2,6 @@
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
 
-function mockLinter(language, code, callback, options, editor){
-  callback([
-    {
-      "message": "Missing semicolon.",
-      "severity": "warning",
-      "from": {
-        "line": 0,
-        "ch": 16,
-        "sticky": null
-      },
-      "to": {
-        "line": 0,
-        "ch": 17,
-        "sticky": null
-      }
-    },
-    {
-      "message": "Expected an identifier and instead saw ';'.",
-      "severity": "error",
-      "from": {
-        "line": 3,
-        "ch": 39,
-        "sticky": null
-      },
-      "to": {
-        "line": 3,
-        "ch": 43,
-        "sticky": null
-      }
-    },
-    {
-      "message": "'i' is already defined.",
-      "severity": "warning",
-      "from": {
-        "line": 8,
-        "ch": 13,
-        "sticky": null
-      },
-      "to": {
-        "line": 8,
-        "ch": 14,
-        "sticky": null
-      }
-    }
-  ]);
-}
-
 function webLinter(language, code, callback, options, editor){
   var lintServerUrl = "http://localhost:4567/" + language;
 
