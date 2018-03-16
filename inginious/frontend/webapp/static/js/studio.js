@@ -7,6 +7,17 @@
 /**
  * Redirect to the studio to create a new task
  */
+
+function studio_validate_name_task(){
+    var task_id = $('#new_task_id');
+    if(!task_id.val().match(/^[a-zA-Z0-9_\-]+$/))
+    {
+        alert('Task id should only contain alphanumeric characters (in addition to "_" and "-").');
+        return;
+    }
+}
+
+
 function studio_create_new_task()
 {
     var task_id = $('#new_task_id');
