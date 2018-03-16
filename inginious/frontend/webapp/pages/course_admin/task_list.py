@@ -26,7 +26,10 @@ class CourseTaskListPage(INGIniousAdminPage):
 
         if "new_task_id" in data:
             # Create new task
-           self.task_factory.update_task_descriptor_content(courseid, data["new_task_id"], yaml.load(open("task.yaml", "r")), "yaml")
+            default_task_data = yaml.safe_load(open("task.yaml", "r"))
+            default_task_data["name"] = data["new_task_id"]
+            self.task_factory.update_task_descriptor_content(courseid, data["new_task_id"], default_task_data, "yaml")
+            
 
         if "task" in data:
             # Change tasks order
