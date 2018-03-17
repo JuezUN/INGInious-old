@@ -10,7 +10,7 @@ class App extends React.Component {
       name: 'language tasks!',
       author: 'andres rondon',
       context: 'n/a',
-      tags: ['cpp', 'datastructures']
+      tags: ['cpp', 'datastructures'],
     };
 
     return (
