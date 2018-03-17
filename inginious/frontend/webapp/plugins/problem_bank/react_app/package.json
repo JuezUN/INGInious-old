@@ -43,7 +43,7 @@
   "scripts": {
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
-    "test": "CI=1 node scripts/test.js --env=jsdom"
+    "test": "node scripts/test.js --env=jsdom"
   },
   "devDependencies": {
     "@types/enzyme-adapter-react-16": "^1.0.2",
