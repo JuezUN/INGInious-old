@@ -9,6 +9,7 @@ ShallowWrapper {
       Object {
         "author": "andres rondon",
         "context": "n/a",
+        "courseId": "Algoritmos",
         "id": "someId",
         "name": "language tasks!",
         "tags": Array [
@@ -30,11 +31,41 @@ ShallowWrapper {
     "key": undefined,
     "nodeType": "host",
     "props": Object {
-      "children": "language tasks!",
+      "children": Array [
+        <b>
+          Algoritmos - language tasks!
+        </b>,
+        <br />,
+        "cpp, datastructures",
+      ],
+      "className": "list-group-item",
+      "type": "button",
     },
     "ref": null,
-    "rendered": "language tasks!",
-    "type": "div",
+    "rendered": Array [
+      Object {
+        "instance": null,
+        "key": undefined,
+        "nodeType": "host",
+        "props": Object {
+          "children": "Algoritmos - language tasks!",
+        },
+        "ref": null,
+        "rendered": "Algoritmos - language tasks!",
+        "type": "b",
+      },
+      Object {
+        "instance": null,
+        "key": undefined,
+        "nodeType": "host",
+        "props": Object {},
+        "ref": null,
+        "rendered": null,
+        "type": "br",
+      },
+      "cpp, datastructures",
+    ],
+    "type": "button",
   },
   Symbol(enzyme.__nodes__): Array [
     Object {
@@ -42,11 +73,41 @@ ShallowWrapper {
       "key": undefined,
       "nodeType": "host",
       "props": Object {
-        "children": "language tasks!",
+        "children": Array [
+          <b>
+            Algoritmos - language tasks!
+          </b>,
+          <br />,
+          "cpp, datastructures",
+        ],
+        "className": "list-group-item",
+        "type": "button",
       },
       "ref": null,
-      "rendered": "language tasks!",
-      "type": "div",
+      "rendered": Array [
+        Object {
+          "instance": null,
+          "key": undefined,
+          "nodeType": "host",
+          "props": Object {
+            "children": "Algoritmos - language tasks!",
+          },
+          "ref": null,
+          "rendered": "Algoritmos - language tasks!",
+          "type": "b",
+        },
+        Object {
+          "instance": null,
+          "key": undefined,
+          "nodeType": "host",
+          "props": Object {},
+          "ref": null,
+          "rendered": null,
+          "type": "br",
+        },
+        "cpp, datastructures",
+      ],
+      "type": "button",
     },
   ],
   Symbol(enzyme.__options__): Object {

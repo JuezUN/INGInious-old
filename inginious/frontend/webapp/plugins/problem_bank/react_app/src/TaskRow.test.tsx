@@ -7,6 +7,7 @@ import Task from './Task';
 describe('TaskRow', () => {
   const someTask: Task = {
     id: 'someId',
+    courseId: 'Algoritmos',
     name: 'language tasks!',
     author: 'andres rondon',
     context: 'n/a',

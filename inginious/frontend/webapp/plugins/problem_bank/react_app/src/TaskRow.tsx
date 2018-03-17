@@ -6,13 +6,18 @@ export interface TaskRowProps {
 }
 
 class TaskRow extends React.Component<TaskRowProps, {}> {
-
   public constructor(props: TaskRowProps) {
     super(props);
   }
 
   public render() {
-    return <div>{this.props.task.name}</div>;
+    return (
+      <button type="button" className="list-group-item">
+        <b>{this.props.task.courseId + ' - ' + this.props.task.name}</b>
+        <br />
+        {this.props.task.tags.join(', ')}
+      </button>
+    );
   }
 }
 

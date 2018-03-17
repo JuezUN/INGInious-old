@@ -7,6 +7,7 @@ class App extends React.Component {
   render() {
     const someTask: Task = {
       id: 'someId',
+      courseId: 'Algoritmos',
       name: 'language tasks!',
       author: 'andres rondon',
       context: 'n/a',
