@@ -3,8 +3,10 @@ interface Task {
     name: string;
     author: string;
     context: string;
-    
+    tags: string[];   
 }
+
+export default Task;
 
 // dict = {"course_id": task["course_id"], 
 // "task_id": task["task_id"], 
