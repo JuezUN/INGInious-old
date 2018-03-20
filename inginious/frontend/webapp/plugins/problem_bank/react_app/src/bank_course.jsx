@@ -1,5 +1,4 @@
 import React from "react";
-import $ from 'jquery';
 import { Modal, Button, Alert } from 'react-bootstrap';
 
 class BankCourse extends React.Component {
@@ -20,17 +19,11 @@ class BankCourse extends React.Component {
         this.setState({ showModal: false });
     };
 
-    deleteCourse = () => {
-        let course_id = this.props.name;
-        let updateParent = this.props.callbackParent;
+    onDeleteCourse = () => {
+        let courseId = this.props.name;
+        let deleteCourse = this.props.callbackOnDeleteCourse;
 
-        $.ajax({
-            url: '/plugins/problems_bank/api/bank_courses?' + $.param({"course_id": course_id}),
-            type: "DELETE",
-            success: function(data){
-                updateParent()
-            }
-        });
+        deleteCourse(courseId);
 
         this.close();
     };
@@ -40,9 +33,9 @@ class BankCourse extends React.Component {
             <div>
                 <button type="button" className="list-group-item">
                     <b>{this.props.name}</b>
-                <a className="pull-right" onClick={this.open} >
-                    <span className="glyphicon glyphicon-remove"></span>
-                </a>
+                    <a className="pull-right" onClick={this.open}>
+                        <span className="glyphicon glyphicon-remove"></span>
+                    </a>
                 </button>
                 <Modal className="modal-container"
                     show={this.state.showModal}
@@ -57,13 +50,13 @@ class BankCourse extends React.Component {
                     <Modal.Body>
                       <Alert bsStyle="warning">
                           <h5><strong>Are you sure that you want to remove the bank privileges from this course?</strong></h5>
-                          <h6>* The course won't be remove, only the permits to be a bank will be removed.</h6>
+                          <h6>* The course won't be removed, only the permits to be a bank will be removed.</h6>
                       </Alert>
                     </Modal.Body>
 
                     <Modal.Footer>
                         <Button onClick={this.close}>Cancel</Button>
-                        <Button onClick={this.deleteCourse} bsStyle="primary">Remove</Button>
+                        <Button onClick={this.onDeleteCourse} bsStyle="primary">Remove</Button>
                     </Modal.Footer>
                 </Modal>
             </div>

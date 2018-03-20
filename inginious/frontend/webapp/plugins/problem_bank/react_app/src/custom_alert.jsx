@@ -4,10 +4,9 @@ import { Alert } from 'react-bootstrap';
 class CustomAlert extends React.Component {
 
     handleAlertDismiss = () => {
-        this.props.isVisible = false;
 
         let updateParent = this.props.callbackParent;
-        updateParent(this.props.isVisible);
+        updateParent(false);
 
         this.forceUpdate();
     };

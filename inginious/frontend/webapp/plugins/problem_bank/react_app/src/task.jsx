@@ -1,6 +1,6 @@
 import React from "react";
 import { Modal, Button, Row, Col, Well } from 'react-bootstrap';
-import GeneralCourseAutosuggest from './general_course_autosuggest';
+import CourseAutosuggest from './course_autosuggest';
 
 class Task extends React.Component {
     constructor(props, context) {
@@ -19,9 +19,11 @@ class Task extends React.Component {
         this.setState({ showModal: false });
     };
 
-    onChildChanged(data){
-        let updateParent = this.props.callbackParent;
-        updateParent(data);
+    onClick(courseId){
+        let taskId = this.props.task_info.task_id;
+        let bankId = this.props.task_info.course_id;
+        let addTaskToCourse = this.props.callBackAddTaskToCourse;
+        addTaskToCourse(courseId, taskId, bankId);
         this.close();
     }
 
@@ -65,14 +67,17 @@ class Task extends React.Component {
 
                         <Well bsSize="small">
                             <h5>Select destination course</h5>
-                            <GeneralCourseAutosuggest task_info={this.props.task_info}
-                                                      callbackParent={(data) => this.onChildChanged(data)}/>
+                            <CourseAutosuggest
+                                task_info={this.props.task_info}
+                                courses={this.props.courses}
+                                messageButton={"Copy task"}
+                                callbackOnClick={(courseId) => this.onClick(courseId)}
+                            />
                         </Well>
                     </Modal.Body>
 
                     <Modal.Footer>
                         <Button onClick={this.close}>Close</Button>
-                        {/* <Button bsStyle="primary">Save changes</Button> */}
                     </Modal.Footer>
                 </Modal>
             </div>
