@@ -31,12 +31,10 @@ class BankCourse extends React.Component {
     render() {
         return (
             <div>
-                <button type="button" className="list-group-item">
+                <a type="button" className="list-group-item" >
                     <b>{this.props.name}</b>
-                    <a className="pull-right" onClick={this.open}>
-                        <span className="glyphicon glyphicon-remove"></span>
-                    </a>
-                </button>
+                    <span role="button" className="glyphicon glyphicon-remove pull-right text-danger" onClick={this.open}></span>
+                </a>
                 <Modal className="modal-container"
                     show={this.state.showModal}
                     onHide={this.close}
