@@ -17,10 +17,10 @@ class BankPage extends React.Component {
             pageCourses: 1,
             totalPagesTasks: 1,
             totalPagesCourses: 1,
-            timer: 0,
-            query: ''
         };
-        this.limit = 2;
+
+        this.limit = 10;
+
         this.onPageTaskChange = this.onPageTaskChange.bind(this);
         this.onPageCourseChange = this.onPageCourseChange.bind(this);
         this.addTaskToCourse = this.addTaskToCourse.bind(this);
@@ -53,7 +53,6 @@ class BankPage extends React.Component {
                 totalPagesTasks: newTotalPages,
                 pageTasks: 1,
                 tasks,
-                query: '',
             });
         });
     }
@@ -63,25 +62,6 @@ class BankPage extends React.Component {
             this.setState({
                 availableCourses
             });
-        });
-    }
-
-    updateFilteredTasks(filteredTasks){
-        let newTotalPages = Math.ceil(filteredTasks.length / this.limit);
-        let newPage = this.state.pageTasks;
-        if( newTotalPages >= 1) {
-            if( this.state.pageTasks > newTotalPages){
-                newPage = newTotalPages
-            }
-        } else {
-            newPage = 1;
-            newTotalPages = 1;
-        }
-
-        this.setState({
-            tasks : filteredTasks,
-            pageTasks : newPage,
-            totalPagesTasks : newTotalPages
         });
     }
 
@@ -97,22 +77,26 @@ class BankPage extends React.Component {
         });
     };
 
-    handleChangeQuery(e) {
-        let newStateQuery = e.target.value; // The new value is required first
+    updateFilteredTasksAsync(query){
+        $.post( "/plugins/problems_bank/api/filter_bank_tasks", { "task_query": query }, (filteredTasks) => {
+            let newTotalPages = Math.ceil(filteredTasks.length / this.limit);
+            let newPage = this.state.pageTasks;
+            if( newTotalPages >= 1) {
+                if( this.state.pageTasks > newTotalPages){
+                    newPage = newTotalPages
+                }
+            } else {
+                newPage = 1;
+                newTotalPages = 1;
+            }
 
-        if( newStateQuery === "" ){
-            this.updateTasksAsync();
-        } else {
-            clearTimeout(this.state.timer);
             this.setState({
-               query: newStateQuery,
-               timer: setTimeout(() => {
-                   $.post( "/plugins/problems_bank/api/filter_bank_tasks",
-                       { "task_query": this.state.query }, (filtered_tasks) => this.updateFilteredTasks(filtered_tasks));
-               }, 250)
+                tasks : filteredTasks,
+                pageTasks : newPage,
+                totalPagesTasks : newTotalPages
             });
-        }
-    };
+        });
+    }
 
     addCourse(courseId){
         $.post( "/plugins/problems_bank/api/bank_courses", { "course_id": courseId }, (data) => {
@@ -123,7 +107,9 @@ class BankPage extends React.Component {
     }
 
     addTaskToCourse(targetId, taskId, bankId){
-        return $.post( "/plugins/problems_bank/api/copy_task", {"target_id": targetId, "task_id": taskId, "bank_id": bankId} ,( data ) => {
+        return $.post( "/plugins/problems_bank/api/copy_task",
+            {"target_id": targetId, "task_id": taskId, "bank_id": bankId} ,( data ) => {
+
             this.updateTasksAsync();
         });
     };
@@ -132,6 +118,7 @@ class BankPage extends React.Component {
     onPageTaskChange(page) {
         this.setState({pageTasks: page});
     }
+
     onPageCourseChange(page) {
         this.setState({pageCourses: page});
     }
@@ -164,13 +151,12 @@ class BankPage extends React.Component {
                     <TaskList
                         tasks={this.state.tasks}
                         limit={this.limit}
-                        query={this.state.query}
                         page={this.state.pageTasks}
                         totalPages={this.state.totalPagesTasks}
-                        courses={this.state.availableCourses}
+                        courses={this.state.courses}
                         callbackOnPageChange={(page) => this.onPageTaskChange(page)}
                         callbackUpdateTasks={() => this.updateTasksAsync()}
-                        callbackHandleChangeQuery={(e) => this.handleChangeQuery(e)}
+                        callbackUpdateFilteredTasks={(query) => this.updateFilteredTasksAsync(query)}
                         callBackAddTaskToCourse={this.addTaskToCourse}
                     />
                 </Tab>

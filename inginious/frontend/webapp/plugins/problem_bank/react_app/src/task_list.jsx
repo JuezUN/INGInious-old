@@ -11,6 +11,8 @@ class TaskList extends React.Component{
         this.state = {
             data: {"message" : ""},
             isVisibleAlert: false,
+            query: '',
+            timer: 0,
         };
         this.onChildChanged = this.onChildChanged.bind(this);
     }
@@ -31,6 +33,22 @@ class TaskList extends React.Component{
            isVisibleAlert: isVisible
         });
     }
+
+    handleChange(e) {
+        let newStateQuery = e.target.value;
+        let updateFilteredTasks = this.props.callbackUpdateFilteredTasks;
+
+        if( newStateQuery === "" ){
+            let updateTasks = this.props.callbackUpdateTasks;
+            updateTasks();
+        } else {
+            clearTimeout(this.state.timer);
+            this.setState({
+               query: newStateQuery,
+               timer: setTimeout(() => updateFilteredTasks(newStateQuery), 250)
+            });
+        }
+    };
 
     render() {
 
@@ -54,7 +72,7 @@ class TaskList extends React.Component{
                         type="text"
                         value={this.props.query}
                         placeholder="Search a key word"
-                        onChange={this.props.callbackHandleChangeQuery}
+                        onChange={(e) => this.handleChange(e)}
                     />
                 </form>
 
