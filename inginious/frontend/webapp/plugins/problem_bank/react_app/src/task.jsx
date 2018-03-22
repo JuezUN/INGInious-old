@@ -77,6 +77,8 @@ class Task extends React.Component {
                                 courses={courses}
                                 messageButton={"Copy task"}
                                 callbackOnClick={(courseId) => this.onClick(courseId)}
+                                mdInput={4}
+                                mdButton={4}
                             />
                         </Well>
                     </Modal.Body>

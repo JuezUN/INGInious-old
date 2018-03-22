@@ -30,6 +30,8 @@ class BankCourseList extends React.Component {
                         courses={this.props.availableCourses}
                         callbackOnClick={this.props.callbackAddCourse}
                         messageButton={"Add course to bank"}
+                        mdInput={3}
+                        mdButton={2}
                     />
                 </Well>
 

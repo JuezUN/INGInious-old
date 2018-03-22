@@ -63,7 +63,7 @@ class CourseAutosuggest extends React.Component {
         return (
 
             <Row>
-              <Col md={3}>
+              <Col md={this.props.mdInput}>
                 <Autosuggest
                     suggestions={this.state.suggestions}
                     onSuggestionsFetchRequested={({value}) => this.setState({suggestions: this.getSuggestions(value)})}
@@ -73,15 +73,12 @@ class CourseAutosuggest extends React.Component {
                     inputProps={inputProps}
                 />
               </Col>
-              <Col md={2}>
+              <Col md={this.props.mdButton}>
                 <button onClick={this.onClick} className="btn btn-primary" disabled={this.state.isDisabled}>
                     {this.props.messageButton}
                 </button>
               </Col>
-              <Col mdHidden={5}>
-              </Col>
-              <Col mdHidden={2}>
-              </Col>
+              <Col mdHidden={6}></Col>
             </Row>
         );
     }
