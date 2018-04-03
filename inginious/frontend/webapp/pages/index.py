@@ -76,4 +76,6 @@ class IndexPage(INGIniousAuthPage):
 
         registerable_courses = OrderedDict(sorted(iter(registerable_courses.items()), key=lambda x: x[1].get_name()))
 
-        return self.template_helper.get_renderer().main(open_courses, registerable_courses, except_free_last_submissions, success)
+        additional_divs = self.plugin_manager.call_hook('main_page_div', template_helper=self.template_helper)
+
+        return self.template_helper.get_renderer().main(open_courses, registerable_courses, except_free_last_submissions, success, additional_divs)

@@ -1,7 +1,14 @@
 from . import pages
+import os.path
 from inginious.frontend.webapp.plugins.utils import create_static_resource_page
-from .constants import _REACT_BASE_URL, _REACT_BUILD_FOLDER, _BASE_STATIC_FOLDER, _BASE_STATIC_URL
+from .constants import _REACT_BASE_URL, _REACT_BUILD_FOLDER, _BASE_STATIC_FOLDER, _BASE_STATIC_URL, _BASE_RENDERER_PATH
 
+
+
+def problem_bank_main_div(template_helper):
+    div_id = 'problem_bank_main'
+    content = template_helper.get_custom_renderer(_BASE_RENDERER_PATH, layout=False).problem_bank_div()
+    return div_id, content
 
 def init(plugin_manager, course_factory, client, config):
     if "problem_banks" not in plugin_manager.get_database().collection_names():
@@ -16,3 +23,4 @@ def init(plugin_manager, course_factory, client, config):
     plugin_manager.add_page(r'/plugins/problems_bank/api/bank_tasks', pages.SearchTaskApi)
     plugin_manager.add_page(r'/plugins/problems_bank/api/filter_bank_tasks', pages.FilterTasksApi)
     plugin_manager.add_page(r'/plugins/problems_bank', pages.BankPage)
+    plugin_manager.add_hook('main_page_div', problem_bank_main_div)
