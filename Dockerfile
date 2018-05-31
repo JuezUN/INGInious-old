@@ -31,3 +31,4 @@ RUN mkdir backup
 #RUN npm run build
 
 CMD ["./inginious-webapp --host 0.0.0.0"]
+j
