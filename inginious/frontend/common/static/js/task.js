@@ -1006,7 +1006,10 @@ function convertInginiousLanguageToCodemirror(inginiousLanguage) {
         "c11": "c",
         "python2": "python",
         "python3": "python",
-        "ruby": "ruby"
+        "ruby": "ruby",
+        "GNU C++": "cpp",
+        "GNU C++11" : "cpp",
+        "GNU C++14" : "cpp"
     };
 
     return languages[inginiousLanguage];
@@ -1133,7 +1136,13 @@ var lintServerUrl = "http://localhost:4567/";
 function lintCode(language, problemId, callback){
   if(language == "plain")
     language = getLanguageForProblemId(problemId);
-  var editor =  getEditorForProblemId(problemId);
+
+  language = convertInginiousLanguageToCodemirror(language)
+
+
+    var editor =  getEditorForProblemId(problemId);
+
+
   var code = editor.getValue();
   var apiUrl = lintServerUrl + language;
   callback = callback || getCallbackForLanguage(language, editor);
